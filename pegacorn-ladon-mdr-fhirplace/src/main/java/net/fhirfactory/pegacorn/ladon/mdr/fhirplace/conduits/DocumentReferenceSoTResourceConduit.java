@@ -22,8 +22,8 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.TokenParam;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.DocumentReferenceSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceFoundationDocumentsMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
@@ -32,12 +32,14 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
+import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 
@@ -181,12 +183,17 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Element> parameterSet) {
+    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
         ArrayList<ResourceSoTConduitSearchResponseElement> resourceList = new ArrayList<ResourceSoTConduitSearchResponseElement>();
         if(isDocumentReferenceSearchByTypeAndDate(parameterSet)) {
             resourceList.add(getDocumentReferenceByTypeAndDate(parameterSet));
         }
         return(resourceList);
+    }
+
+    @Override
+    public boolean supportiveOfSearchCritiera(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
+        return false;
     }
 
     @Override
@@ -208,7 +215,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     // Supported Searches
     //
 
-    private boolean isDocumentReferenceSearchByTypeAndDate(Map<Property, Element> parameterSet){
+    private boolean isDocumentReferenceSearchByTypeAndDate(Map<Property, Serializable> parameterSet){
         if(parameterSet.size() != 2){
             return(false);
         }
@@ -225,8 +232,8 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
         }
         isRightSearch = false;
         for(Property currentProperty: propertyList){
-            Element currentElement = parameterSet.get(currentProperty);
-            if(currentProperty.getName().contentEquals("date")){
+            Serializable currentElement = parameterSet.get(currentProperty);
+            if(currentElement instanceof DateRangeParam){
                 isRightSearch = true;
                 break;
             }
@@ -234,38 +241,43 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
         return(isRightSearch);
     }
 
-    private ResourceSoTConduitSearchResponseElement getDocumentReferenceByTypeAndDate(Map<Property, Element> parameterSet){
-        CodeableConcept documentReferenceTypeValue = null;
+    private ResourceSoTConduitSearchResponseElement getDocumentReferenceByTypeAndDate(Map<Property, Serializable> parameterSet){
+        boolean hasDocumentReferenceTypeParam = false;
+        boolean hasDocumentReferenceCreationDateParam = false;
+        TokenParam documentReferenceTypeValue = null;
         Set<Property> propertyList = parameterSet.keySet();
         for (Property currentProperty : propertyList) {
             if (currentProperty.getName().contentEquals("type")) {
-                documentReferenceTypeValue = (CodeableConcept) parameterSet.get(currentProperty);
-                break;
+                Serializable currentElement = parameterSet.get(currentProperty);
+                if(currentElement instanceof TokenParam) {
+                    documentReferenceTypeValue = (TokenParam) currentElement;
+                    hasDocumentReferenceTypeParam = true;
+                    break;
+                }
             }
         }
-        Period searchPeriod = null;
+        DateRangeParam dateRangeParam = null;
         for (Property currentProperty : propertyList) {
-            Element currentElement = parameterSet.get(currentProperty);
             if (currentProperty.getName().contentEquals("date")) {
-                searchPeriod = (Period) parameterSet.get(currentProperty);
-                break;
+                Serializable currentElement = parameterSet.get(currentProperty);
+                if(currentElement instanceof DateRangeParam) {
+                    dateRangeParam = (DateRangeParam) currentElement;
+                    hasDocumentReferenceCreationDateParam = true;
+                    break;
+                }
             }
         }
         ResourceSoTConduitSearchResponseElement searchResponse = new ResourceSoTConduitSearchResponseElement();
-        if(!searchPeriod.hasStart()) {
+        if(!(hasDocumentReferenceCreationDateParam && hasDocumentReferenceTypeParam)) {
             //Todo this is empty, needs populating
             return (searchResponse);
         }
-        if(!searchPeriod.hasEnd()){
-            searchPeriod.setEnd(Date.from(Instant.now()));
-        }
-        Coding docrefTypeCoding = documentReferenceTypeValue.getCodingFirstRep();
         Bundle response = getFHIRPlaceShardClient()
                 .search()
                 .forResource(DocumentReference.class)
-                .where(DocumentReference.DATE.after().millis(searchPeriod.getStart()))
-                .and(DocumentReference.DATE.beforeOrEquals().millis(searchPeriod.getEnd()))
-                .and(DocumentReference.TYPE.exactly().systemAndCode(docrefTypeCoding.getSystem(), docrefTypeCoding.getCode()))
+                .where(DocumentReference.DATE.after().millis(dateRangeParam.getLowerBoundAsInstant()))
+                .and(DocumentReference.DATE.beforeOrEquals().millis(dateRangeParam.getLowerBoundAsInstant()))
+                .and(DocumentReference.TYPE.exactly().systemAndCode(documentReferenceTypeValue.getSystem(), documentReferenceTypeValue.getValue()))
                 .returnBundle(Bundle.class)
                 .execute();
 
@@ -285,6 +297,41 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
         }
         searchResponse.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         searchResponse.setSoTConduitGrade(SoTConduitGradeEnum.AUTHORITATIVE);
+        return(searchResponse);
+    }
+
+    private ResourceSoTConduitSearchResponseElement getDocumentReferenceByIdentifier(Map<Property, Serializable> parameterSet) {
+        boolean hasDocumentReferenceIdentifierInfo = false;
+        TokenParam documentReferenceIdentifierParam = null;
+        Set<Property> propertyList = parameterSet.keySet();
+        for (Property currentProperty : propertyList) {
+            if (currentProperty.getName().contentEquals("identifier")) {
+                Serializable currentElement = parameterSet.get(currentProperty);
+                if(currentElement instanceof TokenParam) {
+                    documentReferenceIdentifierParam = (TokenParam) currentElement;
+                    hasDocumentReferenceIdentifierInfo = true;
+                    break;
+                }
+            }
+        }
+        ResourceSoTConduitSearchResponseElement searchResponse = new ResourceSoTConduitSearchResponseElement();
+        if(hasDocumentReferenceIdentifierInfo) {
+            String searchURL = "DocumentReference?identifier:of_type=" + documentReferenceIdentifierParam.getSystem() + "|" + documentReferenceIdentifierParam.getValue();
+            Bundle response = getFHIRPlaceShardClient()
+                    .search()
+                    .byUrl(searchURL)
+                    .returnBundle(Bundle.class)
+                    .execute();
+            for(Bundle.BundleEntryComponent entry: response.getEntry()){
+                Resource currentResource = entry.getResource();
+                if(currentResource.getResourceType() == ResourceType.DocumentReference){
+                    searchResponse.addResource(currentResource);
+                }
+            }
+            searchResponse.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
+            searchResponse.setSoTConduitGrade(SoTConduitGradeEnum.AUTHORITATIVE);
+            return(searchResponse);
+        }
         return(searchResponse);
     }
 }

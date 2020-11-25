@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -181,7 +182,12 @@ public class PractitionerSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Element> parameterSet) {
+    public boolean supportiveOfSearchCritiera(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
+        return false;
+    }
+
+    @Override
+    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
         return null;
     }
 

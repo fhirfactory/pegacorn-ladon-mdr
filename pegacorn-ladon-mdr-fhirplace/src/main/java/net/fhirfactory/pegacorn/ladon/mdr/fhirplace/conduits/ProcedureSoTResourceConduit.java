@@ -22,7 +22,6 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.ProcedureSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceClinicalSummaryMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
@@ -31,12 +30,14 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
+import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -180,8 +181,13 @@ public class ProcedureSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Element> parameterSet) {
+    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
         return null;
+    }
+
+    @Override
+    public boolean supportiveOfSearchCritiera(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
+        return false;
     }
 
     @Override

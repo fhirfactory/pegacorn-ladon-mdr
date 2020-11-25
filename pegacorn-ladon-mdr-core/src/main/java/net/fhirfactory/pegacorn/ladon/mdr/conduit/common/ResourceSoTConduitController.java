@@ -31,6 +31,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethod
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -212,7 +213,7 @@ public abstract class ResourceSoTConduitController {
     // Searches
     //
 
-    protected List<ResourceSoTConduitSearchResponseElement> attemptResourceSearch(Map<Property, Element> parameterSet){
+    protected List<ResourceSoTConduitSearchResponseElement> attemptResourceSearch(Map<Property, Serializable> parameterSet){
         getLogger().debug(".attemptResourceSearch(): Entry");
         ArrayList<ResourceSoTConduitSearchResponseElement> loadedResources = new ArrayList<ResourceSoTConduitSearchResponseElement>();
         for(SoTResourceConduit currentConduit: conduitSet) {
@@ -280,7 +281,7 @@ public abstract class ResourceSoTConduitController {
         return(aggregatedMethodOutcome);
     }
 
-    public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Element> parameterSet) {
+    public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
         List<ResourceSoTConduitSearchResponseElement> responseElements = this.attemptResourceSearch(parameterSet);
         VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateSearchResultSet(responseElements);
         return(aggregatedMethodOutcome);
