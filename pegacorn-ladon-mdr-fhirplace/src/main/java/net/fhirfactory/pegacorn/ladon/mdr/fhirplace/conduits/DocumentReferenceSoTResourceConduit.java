@@ -21,6 +21,28 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.DocumentReference;
+import org.hl7.fhir.r4.model.Element;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Property;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -33,15 +55,6 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActi
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
 import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
-import org.hl7.fhir.r4.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
 
 @ApplicationScoped
 public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
@@ -101,7 +114,14 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
      */
     @Override
     public ResourceSoTConduitActionResponse createResource(Resource resourceToCreate) {
-        LOG.debug(".createResource(): Entry, resourceToCreate --> {}", resourceToCreate);
+        LOG.info(".createResource(): Entry, resourceToCreate --> {}", resourceToCreate);
+        // TODO --- remove once working
+        DocumentReference docRef = (DocumentReference)resourceToCreate;
+        CodeableConcept docRefType = docRef.getType();
+        Coding docRefTypeCoding = docRefType.getCodingFirstRep();
+        LOG.info(".createResource(): DocumentReference.type.system --> {}", docRefTypeCoding.getSystem());
+        LOG.info(".createResource(): DocumentReference.type.code --> {}", docRefTypeCoding.getCode());
+        
         ResourceSoTConduitActionResponse outcome = standardCreateResource(resourceToCreate);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
@@ -122,7 +142,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
      */
     @Override
     public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
-        LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
+        LOG.debug(".readResource(): Entry, identifier --> {}", identifier); 
         ResourceSoTConduitActionResponse outcome = standardReviewResource(DocumentReference.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
@@ -242,6 +262,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     private ResourceSoTConduitSearchResponseElement getDocumentReferenceByTypeAndDate(Map<Property, Serializable> parameterSet){
+        LOG.info(".getDocumentReferenceByTypeAndDate(): Entry"); // TODO change logging level to DEBUG
         boolean hasDocumentReferenceTypeParam = false;
         boolean hasDocumentReferenceCreationDateParam = false;
         TokenParam documentReferenceTypeValue = null;
@@ -256,6 +277,9 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
                 }
             }
         }
+        if(hasDocumentReferenceTypeParam && LOG.isInfoEnabled()) { // TODO change LOG to isTraceEnabled()
+                LOG.info(".getDocumentReferenceByTypeAndDate(): Found appropriate search parameter: type, type.system --> {}, type.code -->{}", documentReferenceTypeValue.getSystem(), documentReferenceTypeValue.getValue()); // TODO change logging level to TRACE
+        }
         DateRangeParam dateRangeParam = null;
         for (Property currentProperty : propertyList) {
             if (currentProperty.getName().contentEquals("date")) {
@@ -266,6 +290,9 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
                     break;
                 }
             }
+        }
+        if(hasDocumentReferenceCreationDateParam && LOG.isInfoEnabled()) { // TODO change LOG to isTraceEnabled()
+            LOG.info(".getDocumentReferenceByTypeAndDate(): Found appropriate search parameter: date, date.start --> {}, date.end -->{}", dateRangeParam.getLowerBoundAsInstant(), dateRangeParam.getUpperBoundAsInstant()); // TODO change logging level to TRACE
         }
         ResourceSoTConduitSearchResponseElement searchResponse = new ResourceSoTConduitSearchResponseElement();
         if(!(hasDocumentReferenceCreationDateParam && hasDocumentReferenceTypeParam)) {
@@ -282,21 +309,23 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
                 .execute();
 
         if(response == null){
-            //Todo this is empty, needs populating
+            LOG.error(".getDocumentReferenceByTypeAndDate(): No response whatsever.... Warning Will Robinson....");
             return(searchResponse);
         }
         if(response.getTotal() == 0){
-            //Todo this is empty, needs populating
+            LOG.info(".getDocumentReferenceByTypeAndDate(): No resources match search criteria, exiting"); // TODO change logging level to DEBUG
             return(searchResponse);
         }
+        LOG.info(".ResourgetDocumentReferenceByTypeAndDate(): Resources matching search criteria retrieved..."); // TODO change logging level to TRACE
         for(Bundle.BundleEntryComponent entry: response.getEntry()){
             Resource currentResource = entry.getResource();
-            if(currentResource.getResourceType() == ResourceType.DocumentReference){
+            if(currentResource.getResourceType().equals(ResourceType.DocumentReference)){
                 searchResponse.addResource(currentResource);
             }
         }
         searchResponse.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         searchResponse.setSoTConduitGrade(SoTConduitGradeEnum.AUTHORITATIVE);
+        LOG.info(".getDocumentReferenceByTypeAndDate(): Exit, searchResponse --> {}", searchResponse); // TODO change logging level to DEBUG
         return(searchResponse);
     }
 
