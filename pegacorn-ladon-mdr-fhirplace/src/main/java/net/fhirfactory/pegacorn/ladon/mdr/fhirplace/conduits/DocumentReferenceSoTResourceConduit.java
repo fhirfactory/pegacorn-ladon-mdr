@@ -276,7 +276,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
                 .search()
                 .forResource(DocumentReference.class)
                 .where(DocumentReference.DATE.after().millis(dateRangeParam.getLowerBoundAsInstant()))
-                .and(DocumentReference.DATE.beforeOrEquals().millis(dateRangeParam.getLowerBoundAsInstant()))
+                .and(DocumentReference.DATE.beforeOrEquals().millis(dateRangeParam.getUpperBoundAsInstant()))
                 .and(DocumentReference.TYPE.exactly().systemAndCode(documentReferenceTypeValue.getSystem(), documentReferenceTypeValue.getValue()))
                 .returnBundle(Bundle.class)
                 .execute();
