@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor;
 
 import net.fhirfactory.pegacorn.deployment.names.PegacornFHIRPlaceMDRComponentNames;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
+import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class FHIRPlaceFoundationTerminologyMDRAccessor extends JPAServerSecureAccessor {
+public class FHIRPlaceFoundationTerminologyMDRAccessor extends PegacornInternalFHIRClientServices {
     private static final Logger LOG = LoggerFactory.getLogger(FHIRPlaceFoundationTerminologyMDRAccessor.class);
 
     @Override
@@ -40,27 +40,27 @@ public class FHIRPlaceFoundationTerminologyMDRAccessor extends JPAServerSecureAc
     private PegacornFHIRPlaceMDRComponentNames pegacornMDRComponentNames;
 
     @Override
-    protected String specifyTopologySubsystemService() {
+    protected String specifyFHIRServerSubsystemService() {
         return (pegacornMDRComponentNames.getFoundationTerminologyPegacornMDRService());
     }
 
     @Override
-    protected String specifyTopologySubsystemProcessingPlant() {
+    protected String specifyFHIRServerProcessingPlant() {
         return (pegacornMDRComponentNames.getFoundationTerminologyPegacornMDRProcessingPlant());
     }
 
     @Override
-    protected String specifyTopologySubsystemName() {
+    protected String specifyFHIRServerSubsystemName() {
         return (pegacornMDRComponentNames.getFoundationTerminologyPegacornMDRSubsystem());
     }
 
     @Override
-    protected String specifyTopologySubsystemVersion() {
+    protected String specifyFHIRServerSubsystemVersion() {
         return (pegacornMDRComponentNames.getFoundationTerminologyPegacornMDRSubsystemVersion());
     }
 
     @Override
-    protected String specifyTopologyJPAServerEndpointName() {
+    protected String specifyFHIRServerServerEndpointName() {
         return (pegacornMDRComponentNames.getFoundationTerminologyPegacornMDREndpointFhirApi());
     }
 }

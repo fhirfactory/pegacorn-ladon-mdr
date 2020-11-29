@@ -61,6 +61,15 @@ public class LocationDefaultPropertyBasedContentAggregationService extends Domai
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Location resourceSubClass = (Location) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse) {
         if(actionResponse == null){
             return(new ArrayList<>());

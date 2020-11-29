@@ -21,6 +21,9 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common;
 
+import net.fhirfactory.pegacorn.datasets.fhir.r4.codesystems.PegacornIdentifierCodeEnum;
+import net.fhirfactory.pegacorn.datasets.fhir.r4.codesystems.PegacornIdentifierCodeSystemFactory;
+import net.fhirfactory.pegacorn.datasets.fhir.r4.common.SourceOfTruthRIDIdentifierBuilder;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.common.DefaultResourceContentAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.*;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
@@ -28,10 +31,8 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethod
 import org.hl7.fhir.r4.model.*;
 
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public abstract class PerPropertyBasedContentAggregationServiceBase extends DefaultResourceContentAggregationServiceBase {
@@ -42,7 +43,6 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
     abstract protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource);
     abstract protected void aggregateResourceSuperClassByAttribute(ResourceSoTConduitActionResponse baseResponse, ResourceSoTConduitActionResponse additiveResponse);
     abstract protected void aggregateDomainResourceSuperClassByAttribute(ResourceSoTConduitActionResponse baseResponse, ResourceSoTConduitActionResponse additiveResponse);
-    abstract protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse);
 
     protected PerPropertyMergeHelpers getMergeHelpers(){return(mergeHelpers);}
     protected boolean baseHasPrecedence(String propertyName, ResourceSoTConduitActionResponse base, ResourceSoTConduitActionResponse other){
@@ -122,6 +122,7 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
         }
         // If there is only one, return it
         if(outcomeList.size() == 1) {
+            mapIdToIdentifier(precendenceResponse);
             return(precendenceResponse);
         }
         // Otherwise Aggregate the Resource, Property-by-Property
@@ -129,11 +130,11 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
         otherResponseSet.addAll(outcomeList);
         otherResponseSet.remove(precendenceResponse);
         for(ResourceSoTConduitActionResponse currentOutcome: otherResponseSet){
+            mapIdToIdentifier(currentOutcome);
             aggregateResourceSuperClassByAttribute(precendenceResponse, currentOutcome);
             aggregateDomainResourceSuperClassByAttribute(precendenceResponse, currentOutcome);
             aggregateIntoBasePropertyByProperty(precendenceResponse, currentOutcome);
         }
         return(precendenceResponse);
     }
-
 }

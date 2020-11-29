@@ -35,6 +35,7 @@ import java.util.List;
 
 @ApplicationScoped
 public class EncounterDefaultPropertyBasedContentAggregationService extends DomainResourceDefaultContentAggregationService {
+
     private static final Logger LOG = LoggerFactory.getLogger(EncounterDefaultPropertyBasedContentAggregationService.class);
 
     @Override
@@ -48,6 +49,15 @@ public class EncounterDefaultPropertyBasedContentAggregationService extends Doma
             return(bestIdentifier);
         }
         return(null);
+    }
+
+    @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Encounter resourceSubClass = (Encounter)resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
     }
 
     @Override

@@ -24,6 +24,7 @@ package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultst
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common.DomainResourceDefaultContentAggregationService;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Procedure;
 import org.hl7.fhir.r4.model.Resource;
 import org.slf4j.Logger;
@@ -58,6 +59,15 @@ public class ProcedureDefaultPropertyBasedContentAggregationService extends Doma
     @Override
     protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource) {
         throw(new UnsupportedOperationException("Not Yet Implemented"));
+    }
+
+    @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Procedure resourceSubClass = (Procedure) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
     }
 
     @Override

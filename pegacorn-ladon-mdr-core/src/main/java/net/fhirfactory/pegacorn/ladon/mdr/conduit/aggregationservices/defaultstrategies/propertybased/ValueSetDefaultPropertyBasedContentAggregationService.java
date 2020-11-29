@@ -56,6 +56,15 @@ public class ValueSetDefaultPropertyBasedContentAggregationService extends Domai
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        ValueSet resourceSubClass = (ValueSet) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource) {
 
     }

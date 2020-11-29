@@ -23,15 +23,25 @@ package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
+import net.fhirfactory.pegacorn.datasets.fhir.r4.internal.systems.DeploymentInstanceDetailInterface;
+import net.fhirfactory.pegacorn.deployment.names.PegacornFHIRPlaceMDRComponentNames;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
+import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 
+import javax.inject.Inject;
+
 public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
+
+    @Inject
+    private PegacornFHIRPlaceMDRComponentNames pegacornFHIRPlaceMDRComponentNames;
+
+    @Inject
+    DeploymentInstanceDetailInterface deploymentInstanceDetailInterface;
 
     @Override
     protected void doSubclassInitialisations(){
@@ -42,10 +52,29 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         return(getJPAServerSecureAccessor().getClient());
     }
 
-    abstract protected JPAServerSecureAccessor specifyJPAServerSecureAccessor();
+    abstract protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor();
 
-    protected JPAServerSecureAccessor getJPAServerSecureAccessor(){
+    protected PegacornInternalFHIRClientServices getJPAServerSecureAccessor(){
         return(specifyJPAServerSecureAccessor());
+    }
+
+    public PegacornFHIRPlaceMDRComponentNames getPegacornFHIRPlaceMDRComponentNames() {
+        return pegacornFHIRPlaceMDRComponentNames;
+    }
+
+    @Override
+    protected String specifySourceOfTruthOwningOrganization() {
+        return (deploymentInstanceDetailInterface.getDeploymentInstanceOrganizationName());
+    }
+
+    @Override
+    public String getConduitName(){
+        return(pegacornFHIRPlaceMDRComponentNames.getPegacornFHIRPlaceMDRName());
+    }
+
+    @Override
+    public String getConduitVersion(){
+        return(pegacornFHIRPlaceMDRComponentNames.getPegacornFHIRPlaceMDRVersion());
     }
     /**
      *
@@ -65,7 +94,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             getLogger().error(".writeResource(): Can't create Resource {}, error --> {}", callOutcome.getOperationOutcome());
         }
         Identifier bestIdentifier = getBestIdentifier(callOutcome);
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(VirtualDBActionTypeEnum.CREATE, bestIdentifier, callOutcome);
+        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse( getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), VirtualDBActionTypeEnum.CREATE, bestIdentifier, callOutcome);
         getLogger().debug(".standardCreateResource(): Exit, outcome --> {}", outcome);
         return(outcome);
     }
@@ -90,19 +119,23 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
 
     public ResourceSoTConduitActionResponse standardGetResource(Class <? extends IBaseResource> resourceClass, Identifier identifier){
         getLogger().debug(".standardGetResource(): Entry, identifier --> {}", identifier);
+        getLogger().debug(".standardGetResource(): Entry, identifier.system --> {}", identifier.getSystem());
+        getLogger().debug(".standardGetResource(): Entry, identifier.value --> {}", identifier.getValue());
         Bundle outputBundle = getFHIRPlaceShardClient()
                 .search()
                 .forResource(resourceClass)
-                .where(Patient.IDENTIFIER.exactly().systemAndValues(identifier.getSystem(), identifier.getValue()))
+                .where(DocumentReference.IDENTIFIER.exactly().systemAndValues(identifier.getSystem(), identifier.getValue()))
                 .returnBundle(Bundle.class)
                 .execute();
         boolean hasOutcome = (outputBundle != null);
         if(hasOutcome){
             hasOutcome = (outputBundle.getTotal() > 0);
         }
+        getLogger().trace(".standardGetResource(): Resource has been retrieved!");
         if(!hasOutcome){
             // There was no Resource with that Identifier....
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse();
+            getLogger().trace(".standardGetResource(): There was no Resource with that Identifier....");
+            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
             outcome.setCreated(false);
             outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
             outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
@@ -126,7 +159,8 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         }
         if(outputBundle.getTotal() > 1){
             // There should only be one!
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse();
+            getLogger().trace(".standardGetResource(): There was more than one Resource with that Identifier....");
+            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
             outcome.setCreated(false);
             outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
             outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
@@ -149,9 +183,10 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             return(outcome);
         }
         // There is only be one!
+        getLogger().trace(".standardGetResource(): There one and only one Resource with that Identifier....");
         Bundle.BundleEntryComponent bundleEntry = outputBundle.getEntryFirstRep();
         Resource retrievedResource = bundleEntry.getResource();
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse();
+        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
         outcome.setCreated(false);
         outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
         outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FINISH);
@@ -205,7 +240,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         boolean hasOutcome = (retrievedResource != null);
         if(!hasOutcome){
             // There was no Resource with that Identifier....
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse();
+            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
             outcome.setCreated(false);
             outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
             outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
@@ -228,7 +263,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             outcome.setId(id);
             return(outcome);
         }
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse();
+        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
         outcome.setCreated(false);
         outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
         outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FINISH);
@@ -271,7 +306,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             getLogger().error(".writeResource(): Can't update Resource {}, error --> {}", callOutcome.getOperationOutcome());
         }
         Identifier bestIdentifier = getBestIdentifier(callOutcome);
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(VirtualDBActionTypeEnum.UPDATE, bestIdentifier, callOutcome);
+        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), VirtualDBActionTypeEnum.UPDATE, bestIdentifier, callOutcome);
         getLogger().debug(".standardUpdateResource(): Exit, outcome --> {}", outcome);
         return(outcome);
     }

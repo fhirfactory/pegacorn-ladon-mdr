@@ -56,7 +56,9 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         // Sort the List in terms of Precedence
         Collections.sort(outcomeList);
         // Now, return instance that has Precedence
-        return(outcomeList.get(0));
+        ResourceSoTConduitActionResponse outcome = outcomeList.get(0);
+        this.mapIdToIdentifier(outcome);
+        return(outcome);
     }
 
     protected VirtualDBMethodOutcome defaultSearchOutcomeAggregationService(List<ResourceSoTConduitSearchResponseElement> searchOutcomeList){

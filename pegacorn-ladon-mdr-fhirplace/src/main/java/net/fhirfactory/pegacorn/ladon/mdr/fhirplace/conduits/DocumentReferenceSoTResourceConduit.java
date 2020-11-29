@@ -32,7 +32,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
+import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +40,10 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @ApplicationScoped
 public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
@@ -62,6 +64,11 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     @Override
+    protected String specifySourceOfTruthEndpointSystemName() {
+        return (getPegacornFHIRPlaceMDRComponentNames().getFoundationDocumentsPegacornMDRSubsystem());
+    }
+
+    @Override
     protected Identifier getBestIdentifier(MethodOutcome outcome) {
         if(outcome == null){
             return(null);
@@ -79,7 +86,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     @Override
-    protected JPAServerSecureAccessor specifyJPAServerSecureAccessor() {
+    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
         return (fhirPlaceFoundationDocumentsMDRAccessor);
     }
 
@@ -122,11 +129,11 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
      */
     @Override
     public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
-        LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
+        LOG.debug(".reviewResource(): Entry, identifier --> {}", identifier);
         ResourceSoTConduitActionResponse outcome = standardReviewResource(DocumentReference.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
-        LOG.debug(".readResource(): Exit, outcome --> {}", outcome);
+        LOG.debug(".reviewResource(): Exit, outcome --> {}", outcome);
         return(outcome);
     }
 

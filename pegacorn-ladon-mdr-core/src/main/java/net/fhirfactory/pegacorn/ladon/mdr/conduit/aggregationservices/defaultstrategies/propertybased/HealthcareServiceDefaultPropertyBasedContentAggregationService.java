@@ -63,6 +63,15 @@ public class HealthcareServiceDefaultPropertyBasedContentAggregationService exte
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        HealthcareService resourceSubClass = (HealthcareService)resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource) {
         throw(new UnsupportedOperationException("Not Yet Implemented"));
     }

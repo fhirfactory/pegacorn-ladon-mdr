@@ -61,6 +61,15 @@ public class OrganizationDefaultPropertyBasedContentAggregationService extends D
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Organization resourceSubClass = (Organization) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse) {
         if(actionResponse == null){
             return(new ArrayList<>());

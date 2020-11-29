@@ -34,8 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class implements the "Whole-Resource" aggregation service - whereby the only a single response is provided back
+ * as a result. Determining which response is used is via the "Precedence" Function.
+ *
+ * A majority of the logic is performaned in the WholeResourceBaseAggregationServiceBase superclass.
+ *
+ * Most of the functions within this subclass relate to resolving Identifier detail (etc) for use within the Superclass.
+ */
 @ApplicationScoped
 public class TaskDefaultResourceBasedContentAggregationService extends WholeResourceBasedAggregationServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(TaskDefaultResourceBasedContentAggregationService.class);
@@ -58,6 +67,27 @@ public class TaskDefaultResourceBasedContentAggregationService extends WholeReso
             return (bestIdentifier);
         }
         return (null);
+    }
+
+    @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Task resourceSubClass = (Task) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
+    protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse) {
+        if(actionResponse == null){
+            return(new ArrayList<>());
+        }
+        Task actionResponseResource = (Task) actionResponse.getResource();
+        if(actionResponseResource.hasIdentifier()){
+            return(actionResponseResource.getIdentifier());
+        }
+        return(new ArrayList<>());
     }
 
     @Override

@@ -61,6 +61,15 @@ public class PatientDefaultPropertyBasedContentAggregationService extends Domain
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        Patient resourceSubClass = (Patient) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse) {
         if(actionResponse == null){
             return(new ArrayList<>());

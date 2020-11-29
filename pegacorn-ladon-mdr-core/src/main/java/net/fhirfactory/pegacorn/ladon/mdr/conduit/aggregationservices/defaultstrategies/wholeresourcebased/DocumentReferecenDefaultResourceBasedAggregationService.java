@@ -26,6 +26,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActi
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
+import org.hl7.fhir.r4.model.CommunicationRequest;
 import org.hl7.fhir.r4.model.DocumentReference;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Resource;
@@ -33,8 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class implements the "Whole-Resource" aggregation service - whereby the only a single response is provided back
+ * as a result. Determining which response is used is via the "Precedence" Function.
+ *
+ * A majority of the logic is performaned in the WholeResourceBaseAggregationServiceBase superclass.
+ *
+ * Most of the functions within this subclass relate to resolving Identifier detail (etc) for use within the Superclass.
+ */
 @ApplicationScoped
 public class DocumentReferecenDefaultResourceBasedAggregationService extends WholeResourceBasedAggregationServiceBase {
 
@@ -46,6 +56,27 @@ public class DocumentReferecenDefaultResourceBasedAggregationService extends Who
     @Override
     protected String getAggregationServiceName() {
         return ("DocumentReferenceDefaultResourceContentAggregationService");
+    }
+
+    @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        DocumentReference resourceSubClass = (DocumentReference) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
+    protected List<Identifier> getIdentifiers(ResourceSoTConduitActionResponse actionResponse) {
+        if(actionResponse == null){
+            return(new ArrayList<>());
+        }
+        DocumentReference actionResponseResource = (DocumentReference) actionResponse.getResource();
+        if(actionResponseResource.hasIdentifier()){
+            return(actionResponseResource.getIdentifier());
+        }
+        return(new ArrayList<>());
     }
 
     @Override

@@ -55,6 +55,15 @@ public class PractitionerRoleDefaultPropertyBasedContentAggregationService exten
     }
 
     @Override
+    protected void addIdentifier(Resource resource, Identifier ridIdentifier) {
+        if(resource == null){
+            return;
+        }
+        PractitionerRole resourceSubClass = (PractitionerRole) resource;
+        resourceSubClass.addIdentifier(ridIdentifier);
+    }
+
+    @Override
     protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResponse, ResourceSoTConduitActionResponse additiveResponse) {
         PractitionerRole basePractitionerRoleResource = (PractitionerRole)baseResponse.getResource();
         PractitionerRole additivePractitionerRoleResource = (PractitionerRole)baseResponse.getResource();

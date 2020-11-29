@@ -30,7 +30,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
-import net.fhirfactory.pegacorn.platform.hapifhir.clients.JPAServerSecureAccessor;
+import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +55,13 @@ public class EndpointSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     private FHIRPlaceBaseEntitiesMDRAccessor fhirPlaceBaseEntitiesMDRAccessor;
 
     @Override
-    protected JPAServerSecureAccessor specifyJPAServerSecureAccessor() {
+    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
         return (fhirPlaceBaseEntitiesMDRAccessor);
+    }
+
+    @Override
+    protected String specifySourceOfTruthEndpointSystemName() {
+        return (getPegacornFHIRPlaceMDRComponentNames().getBaseEntitiesPegacornMDRSubsystem());
     }
 
     @Override
