@@ -1,5 +1,6 @@
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common;
 
+import ca.uhn.fhir.model.api.BaseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
 import org.hl7.fhir.r4.model.*;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,9 +34,9 @@ public class PerPropertyMergeHelpers {
         } else {
             for (Identifier currentBaseResourceIdentifier : baseIdentifierSet) {
                 for (Identifier currentAdditiveResourceIdentifier : additiveIdentifierSet) {
-                    boolean sameUse = currentBaseResourceIdentifier.getUse() == currentAdditiveResourceIdentifier.getUse();
+                    boolean sameUse = currentBaseResourceIdentifier.getUse().equals(currentAdditiveResourceIdentifier.getUse());
                     boolean sameCoding = currentBaseResourceIdentifier.getType().equalsDeep(currentAdditiveResourceIdentifier.getType());
-                    boolean sameSystem = currentBaseResourceIdentifier.getSystem() == currentAdditiveResourceIdentifier.getSystem();
+                    boolean sameSystem = currentBaseResourceIdentifier.getSystem().equals(currentAdditiveResourceIdentifier.getSystem());
                     boolean baseIdentifierIsCurrent = isAttributeCurrent(currentBaseResourceIdentifier.getPeriod());
                     boolean additiveIdentifierIsCurrent = isAttributeCurrent(currentAdditiveResourceIdentifier.getPeriod());
                     if (sameUse && sameCoding && sameSystem && baseIdentifierIsCurrent && additiveIdentifierIsCurrent) {
@@ -66,10 +68,10 @@ public class PerPropertyMergeHelpers {
             for (Reference currentBaseResourceReference : baseReferenceSet) {
                 for (Reference currentAdditiveResourceReference : additiveReferenceSet) {
                     boolean sameReference = currentBaseResourceReference.getReference().contentEquals(currentAdditiveResourceReference.getReference());
-                    boolean sameType = currentBaseResourceReference.getType() == currentAdditiveResourceReference.getType();
-                    boolean sameIdentifierUse = currentBaseResourceReference.getIdentifier().getUse() == currentAdditiveResourceReference.getIdentifier().getUse();
+                    boolean sameType = currentBaseResourceReference.getType().equals(currentAdditiveResourceReference.getType());
+                    boolean sameIdentifierUse = currentBaseResourceReference.getIdentifier().getUse().equals(currentAdditiveResourceReference.getIdentifier().getUse());
                     boolean sameIdentifierType = currentAdditiveResourceReference.getIdentifier().getType().equalsDeep(currentAdditiveResourceReference.getIdentifier().getType());
-                    boolean sameIdentifierSystem = currentAdditiveResourceReference.getIdentifier().getSystem() == currentAdditiveResourceReference.getIdentifier().getSystem();
+                    boolean sameIdentifierSystem = currentAdditiveResourceReference.getIdentifier().getSystem().equals(currentAdditiveResourceReference.getIdentifier().getSystem());
                     if (sameReference && sameType && sameIdentifierUse && sameIdentifierType && sameIdentifierSystem) {
                         if (!baseHasPrecedence("identifier", baseResponse, additiveResponse)) {
                             baseReferenceSet.remove(currentBaseResourceReference);
@@ -129,7 +131,7 @@ public class PerPropertyMergeHelpers {
         } else {
             for (HumanName currentBaseHumanName : baseHumanNameSet) {
                 for (HumanName currentAdditiveHumanName : additiveHumanNameSet) {
-                    boolean sameUse = currentBaseHumanName.getUse() == currentAdditiveHumanName.getUse();
+                    boolean sameUse = currentBaseHumanName.getUse().equals(currentAdditiveHumanName.getUse());
                     boolean sameFamilyName = currentBaseHumanName.getFamily().contentEquals(currentAdditiveHumanName.getFamily());
                     boolean sameGivenName = currentBaseHumanName.getGiven().containsAll(currentAdditiveHumanName.getGiven());
                     boolean baseNameIsCurrent = isAttributeCurrent(currentBaseHumanName.getPeriod());
@@ -163,8 +165,8 @@ public class PerPropertyMergeHelpers {
         } else {
             for (ContactPoint currentBaseContactPoint : baseContactPointSet) {
                 for (ContactPoint currentAdditiveContactPoint : additiveContactPointSet) {
-                    boolean sameUse = currentBaseContactPoint.getUse() == currentAdditiveContactPoint.getUse();
-                    boolean sameSystem = currentBaseContactPoint.getSystem() == currentAdditiveContactPoint.getSystem();
+                    boolean sameUse = currentBaseContactPoint.getUse().equals(currentAdditiveContactPoint.getUse());
+                    boolean sameSystem = currentBaseContactPoint.getSystem().equals(currentAdditiveContactPoint.getSystem());
                     boolean baseContactPointIsCurrent = isAttributeCurrent(currentBaseContactPoint.getPeriod());
                     boolean additiveContactPointIsCurrent = isAttributeCurrent(currentAdditiveContactPoint.getPeriod());
                     if (sameUse && sameSystem && baseContactPointIsCurrent && additiveContactPointIsCurrent) {
@@ -196,8 +198,8 @@ public class PerPropertyMergeHelpers {
         } else {
             for (Address currentBaseAddress : baseAddressSet) {
                 for (Address currentAdditiveAddress : additiveAddressSet) {
-                    boolean sameUse = currentBaseAddress.getUse() == currentAdditiveAddress.getUse();
-                    boolean sameType = currentBaseAddress.getType() == currentAdditiveAddress.getType();
+                    boolean sameUse = currentBaseAddress.getUse().equals(currentAdditiveAddress.getUse());
+                    boolean sameType = currentBaseAddress.getType().equals(currentAdditiveAddress.getType());
                     boolean baseContactPointIsCurrent = isAttributeCurrent(currentBaseAddress.getPeriod());
                     boolean additiveContactPointIsCurrent = isAttributeCurrent(currentAdditiveAddress.getPeriod());
                     if (sameUse && sameType && baseContactPointIsCurrent && additiveContactPointIsCurrent) {
@@ -232,21 +234,21 @@ public class PerPropertyMergeHelpers {
                 for (Attachment currentAdditiveAttachment : additiveAttachmentSet) {
                     boolean sameContentType = false;
                     if (currentBaseAttachment.hasContentType() && currentAdditiveAttachment.hasContentType()) {
-                        sameContentType = currentBaseAttachment.getContentType() == currentAdditiveAttachment.getContentType();
+                        sameContentType = currentBaseAttachment.getContentType().equals(currentAdditiveAttachment.getContentType());
                     }
                     if (!currentBaseAttachment.hasContentType() && !currentAdditiveAttachment.hasContentType()) {
                         sameContentType = true;
                     }
                     boolean sameLanguageCode = false;
                     if (currentBaseAttachment.hasLanguage() && currentAdditiveAttachment.hasLanguage()) {
-                        sameLanguageCode = currentBaseAttachment.getLanguage() == currentAdditiveAttachment.getLanguage();
+                        sameLanguageCode = currentBaseAttachment.getLanguage().equals(currentAdditiveAttachment.getLanguage());
                     }
                     if (!currentBaseAttachment.hasLanguage() && !currentAdditiveAttachment.hasLanguage()) {
                         sameLanguageCode = true;
                     }
                     boolean sameURL = false;
                     if (currentBaseAttachment.hasUrl() && currentAdditiveAttachment.hasUrl()) {
-                        sameURL = currentBaseAttachment.getUrl() == currentAdditiveAttachment.getUrl();
+                        sameURL = currentBaseAttachment.getUrl().equals(currentAdditiveAttachment.getUrl());
                     }
                     if (!currentBaseAttachment.hasUrl() && !currentAdditiveAttachment.hasUrl()) {
                         sameURL = true;
@@ -534,5 +536,7 @@ public class PerPropertyMergeHelpers {
         }
         return (false);
     }
+
+
 
 }

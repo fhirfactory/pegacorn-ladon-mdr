@@ -49,6 +49,8 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         boolean hasFailure = false;
         VirtualDBMethodOutcome failedOutcome = null;
         for(ResourceSoTConduitActionResponse currentOutcome: outcomeList) {
+            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.sourceOfTruthEndpoint --> {}", currentOutcome.getSourceOfTruthEndpoint().getIdentifier().getValue());
+            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.resource --> {}", currentOutcome.getResource().getIdElement());
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
                 return(currentOutcome);
             }
@@ -57,7 +59,7 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         Collections.sort(outcomeList);
         // Now, return instance that has Precedence
         ResourceSoTConduitActionResponse outcome = outcomeList.get(0);
-        this.mapIdToIdentifier(outcome);
+//        this.mapIdToIdentifier(outcome);
         return(outcome);
     }
 

@@ -184,8 +184,8 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         }
         // There is only be one!
         getLogger().trace(".standardGetResource(): There one and only one Resource with that Identifier....");
-        Bundle.BundleEntryComponent bundleEntry = outputBundle.getEntryFirstRep();
-        Resource retrievedResource = bundleEntry.getResource();
+//        Bundle.BundleEntryComponent bundleEntry = outputBundle.getEntryFirstRep();
+//        Resource retrievedResource = bundleEntry.getResource();
         ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
         outcome.setCreated(false);
         outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
@@ -205,8 +205,8 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.INFORMATION);
         opOutcome.addIssue(newOutcomeComponent);
         outcome.setOperationOutcome(opOutcome);
-        outcome.setResource(retrievedResource);
-        outcome.setId(retrievedResource.getIdElement());
+        outcome.setResource(outputBundle);
+        outcome.setId(outputBundle.getIdElement());
         outcome.setIdentifier(identifier);
         getLogger().debug(".standardReviewResource(): Exit, outcome --> {}", outcome);
         return(outcome);
