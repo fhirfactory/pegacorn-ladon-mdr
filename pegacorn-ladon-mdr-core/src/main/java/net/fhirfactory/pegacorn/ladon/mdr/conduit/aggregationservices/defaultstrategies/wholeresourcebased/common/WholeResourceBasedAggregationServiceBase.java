@@ -21,15 +21,20 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased.common;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.OperationOutcome;
+
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.common.DefaultResourceContentAggregationServiceBase;
-import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.*;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
-import org.hl7.fhir.r4.model.*;
-
-import java.util.Collections;
-import java.util.List;
 
 public abstract class WholeResourceBasedAggregationServiceBase extends DefaultResourceContentAggregationServiceBase {
 
@@ -50,7 +55,7 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         VirtualDBMethodOutcome failedOutcome = null;
         for(ResourceSoTConduitActionResponse currentOutcome: outcomeList) {
             getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.sourceOfTruthEndpoint --> {}", currentOutcome.getSourceOfTruthEndpoint().getIdentifier().getValue());
-            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.resource --> {}", currentOutcome.getResource().getIdElement());
+//            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.resource --> {}", currentOutcome.getResource().getIdElement());
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
                 return(currentOutcome);
             }
