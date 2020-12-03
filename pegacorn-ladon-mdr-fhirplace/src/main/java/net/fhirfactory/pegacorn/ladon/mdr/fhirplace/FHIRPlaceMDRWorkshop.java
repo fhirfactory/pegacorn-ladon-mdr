@@ -33,37 +33,37 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
 
 //    @Inject
 //    EndpointSoTResourceConduit endpointSoTResourceConduit;
-/*
-    @Inject
-    GroupSoTResourceConduit groupSoTResourceConduit;
 
-    @Inject
-    HealthcareServiceSoTResourceConduit healthcareServiceSoTResourceConduit;
+//    @Inject
+//    GroupSoTResourceConduit groupSoTResourceConduit;
 
-    @Inject
-    LocationSoTResourceConduit locationSoTResourceConduit;
+//    @Inject
+//    HealthcareServiceSoTResourceConduit healthcareServiceSoTResourceConduit;
 
-    @Inject
-    OrganizationSoTResourceConduit organizationSoTResourceConduit;
+//    @Inject
+//    LocationSoTResourceConduit locationSoTResourceConduit;
 
-    @Inject
-    PatientSoTResourceConduit patientSoTResourceConduit;
+//    @Inject
+//    OrganizationSoTResourceConduit organizationSoTResourceConduit;
 
-    @Inject
-    PractitionerRoleSoTResourceConduit practitionerRoleSoTResourceConduit;
+//    @Inject
+//    PatientSoTResourceConduit patientSoTResourceConduit;
 
-    @Inject
-    PractitionerSoTResourceConduit practitionerSoTResourceConduit;
+//    @Inject
+//    PractitionerRoleSoTResourceConduit practitionerRoleSoTResourceConduit;
 
-    @Inject
-    ProcedureSoTResourceConduit procedureSoTResourceConduit;
+//    @Inject
+//    PractitionerSoTResourceConduit practitionerSoTResourceConduit;
 
-    @Inject
-    TaskSoTResourceConduit taskSoTResourceConduit;
+//    @Inject
+//    ProcedureSoTResourceConduit procedureSoTResourceConduit;
 
-    @Inject
-    ValueSetSoTResourceConduit valueSetSoTResourceConduit;
-    */
+//    @Inject
+//    TaskSoTResourceConduit taskSoTResourceConduit;
+
+//    @Inject
+//    ValueSetSoTResourceConduit valueSetSoTResourceConduit;
+
 
 
     @PostConstruct
