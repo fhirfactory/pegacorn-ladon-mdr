@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.ladon.mdr.conduit;
 
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.common.ResourceContentAggregationServiceBase;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.LocationDefaultPropertyBasedContentAggregationService;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased.LocationDefaultResourceBasedContentAggregationService;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.common.ResourceSoTConduitController;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class LocationSoTConduitController extends ResourceSoTConduitController {
     private static final Logger LOG = LoggerFactory.getLogger(LocationSoTConduitController.class);
 
     @Inject
-    LocationDefaultPropertyBasedContentAggregationService aggregationService;
+    LocationDefaultResourceBasedContentAggregationService aggregationService;
 
     @Override
     protected Logger getLogger(){return(LOG);}

@@ -19,10 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased;
+package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased;
 
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common.DomainResourceDefaultContentAggregationService;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased.common.WholeResourceBasedAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
 import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Resource;
@@ -34,9 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class EncounterDefaultPropertyBasedContentAggregationService extends DomainResourceDefaultContentAggregationService {
+public class EncounterDefaultResourceBasedContentAggregationService extends WholeResourceBasedAggregationServiceBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EncounterDefaultPropertyBasedContentAggregationService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EncounterDefaultResourceBasedContentAggregationService.class);
 
     @Override
     protected Logger getLogger(){return(LOG);}
@@ -61,13 +64,38 @@ public class EncounterDefaultPropertyBasedContentAggregationService extends Doma
     }
 
     @Override
-    protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource) {
-        throw(new UnsupportedOperationException("Not Yet Implemented"));
+    public VirtualDBMethodOutcome aggregateCreateResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.CREATE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateGetResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.REVIEW, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateUpdateResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.UPDATE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateDeleteResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.DELETE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateSearchResultSet(List<ResourceSoTConduitSearchResponseElement> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultSearchOutcomeAggregationService(responseSet);
+        return(virtualDBMethodOutcome);
     }
 
     @Override
     protected String getAggregationServiceName() {
-        return ("EncounterDefaultPropertyBasedContentAggregationService");
+        return ("EncounterDefaultResourceBasedContentAggregationService");
     }
 
     @Override

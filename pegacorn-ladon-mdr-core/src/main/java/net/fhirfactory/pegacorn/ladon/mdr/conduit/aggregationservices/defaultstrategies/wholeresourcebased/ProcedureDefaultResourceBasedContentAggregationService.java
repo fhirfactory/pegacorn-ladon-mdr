@@ -19,12 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased;
+package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased;
 
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common.DomainResourceDefaultContentAggregationService;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased.common.WholeResourceBasedAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
 import org.hl7.fhir.r4.model.Identifier;
-import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Procedure;
 import org.hl7.fhir.r4.model.Resource;
 import org.slf4j.Logger;
@@ -35,15 +38,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class ProcedureDefaultPropertyBasedContentAggregationService extends DomainResourceDefaultContentAggregationService {
-    private static final Logger LOG = LoggerFactory.getLogger(ProcedureDefaultPropertyBasedContentAggregationService.class);
+public class ProcedureDefaultResourceBasedContentAggregationService extends WholeResourceBasedAggregationServiceBase {
+    private static final Logger LOG = LoggerFactory.getLogger(ProcedureDefaultResourceBasedContentAggregationService.class);
 
     @Override
     protected Logger getLogger(){return(LOG);}
 
     @Override
     protected String getAggregationServiceName() {
-        return ("ProcedureDefaultResourceContentAggregationService");
+        return ("ProcedureDefaultResourceBasedContentAggregationService");
     }
 
     @Override
@@ -54,11 +57,6 @@ public class ProcedureDefaultPropertyBasedContentAggregationService extends Doma
             return(bestIdentifier);
         }
         return(null);
-    }
-
-    @Override
-    protected void aggregateIntoBasePropertyByProperty(ResourceSoTConduitActionResponse baseResource, ResourceSoTConduitActionResponse additiveResource) {
-        throw(new UnsupportedOperationException("Not Yet Implemented"));
     }
 
     @Override
@@ -80,5 +78,35 @@ public class ProcedureDefaultPropertyBasedContentAggregationService extends Doma
             return(actionResponseResource.getIdentifier());
         }
         return(new ArrayList<>());
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateCreateResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.CREATE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateGetResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.REVIEW, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateUpdateResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.UPDATE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateDeleteResponseSet(List<ResourceSoTConduitActionResponse> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum.DELETE, responseSet);
+        return(virtualDBMethodOutcome);
+    }
+
+    @Override
+    public VirtualDBMethodOutcome aggregateSearchResultSet(List<ResourceSoTConduitSearchResponseElement> responseSet) {
+        VirtualDBMethodOutcome virtualDBMethodOutcome = defaultSearchOutcomeAggregationService(responseSet);
+        return(virtualDBMethodOutcome);
     }
 }

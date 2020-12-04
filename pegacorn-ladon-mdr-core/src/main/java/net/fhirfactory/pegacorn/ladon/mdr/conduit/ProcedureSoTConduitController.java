@@ -21,7 +21,8 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.conduit;
 
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.ProcedureDefaultPropertyBasedContentAggregationService;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.common.ResourceContentAggregationServiceBase;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.wholeresourcebased.ProcedureDefaultResourceBasedContentAggregationService;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common.PerPropertyBasedContentAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.common.ResourceSoTConduitController;
 import org.hl7.fhir.r4.model.ResourceType;
@@ -36,7 +37,7 @@ public class ProcedureSoTConduitController extends ResourceSoTConduitController 
     private static final Logger LOG = LoggerFactory.getLogger(ProcedureSoTConduitController.class);
 
     @Inject
-    ProcedureDefaultPropertyBasedContentAggregationService aggregationService;
+    ProcedureDefaultResourceBasedContentAggregationService aggregationService;
 
     @Override
     protected Logger getLogger(){return(LOG);}
@@ -47,7 +48,7 @@ public class ProcedureSoTConduitController extends ResourceSoTConduitController 
     }
 
     @Override
-    protected PerPropertyBasedContentAggregationServiceBase specifyAggregationService(){
+    protected ResourceContentAggregationServiceBase specifyAggregationService(){
         return(aggregationService);
     }
 
