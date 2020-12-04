@@ -128,9 +128,9 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
      * @return A Response/Outcome of the operation, including a copy of the Resource (if found).
      */
     @Override
-    public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
+    public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".reviewResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardReviewResource(DocumentReference.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(DocumentReference.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
         LOG.debug(".reviewResource(): Exit, outcome --> {}", outcome);

@@ -22,7 +22,6 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import net.fhirfactory.pegacorn.deployment.names.PegacornFHIRPlaceMDRComponentNames;
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.CareTeamSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceClinicalCareProvisionMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
@@ -125,9 +124,9 @@ public class CareTeamSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
      * @return A Response/Outcome of the operation, including a copy of the Resource (if found).
      */
     @Override
-    public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
+    public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardReviewResource(CareTeam.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(CareTeam.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);

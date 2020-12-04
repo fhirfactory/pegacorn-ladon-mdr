@@ -22,7 +22,6 @@
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.common;
 
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.common.ResourceContentAggregationServiceBase;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultstrategies.propertybased.common.PerPropertyBasedContentAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
@@ -88,7 +87,7 @@ public abstract class ResourceSoTConduitController {
         getLogger().debug(".getResourceFromEachConduit(): Entry, identifier (Identifier)--> {}", identifier);
         ArrayList<ResourceSoTConduitActionResponse> loadedResources = new ArrayList<ResourceSoTConduitActionResponse>();
         for(SoTResourceConduit currentConduit: conduitSet){
-            ResourceSoTConduitActionResponse currentResponse = currentConduit.reviewResource(identifier);
+            ResourceSoTConduitActionResponse currentResponse = currentConduit.getResourceViaIdentifier(identifier);
             if(currentResponse.getResponseResourceGrade() != ResourceGradeEnum.EMPTY) {
                 loadedResources.add(currentResponse);
             }
@@ -133,7 +132,7 @@ public abstract class ResourceSoTConduitController {
         ArrayList<ResourceSoTConduitActionResponse> loadedResources = new ArrayList<ResourceSoTConduitActionResponse>();
         for(SoTResourceConduit currentConduit: conduitSet){
             for(Identifier identifier: identifiers) {
-                ResourceSoTConduitActionResponse currentResponse = currentConduit.reviewResource(identifier);
+                ResourceSoTConduitActionResponse currentResponse = currentConduit.getResourceViaIdentifier(identifier);
                 if (currentResponse.getResponseResourceGrade() != ResourceGradeEnum.EMPTY) {
                     loadedResources.add(currentResponse);
                 }

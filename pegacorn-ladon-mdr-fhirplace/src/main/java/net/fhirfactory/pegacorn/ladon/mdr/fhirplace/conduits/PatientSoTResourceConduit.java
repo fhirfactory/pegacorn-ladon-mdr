@@ -124,9 +124,9 @@ public class PatientSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
      * @return A Response/Outcome of the operation, including a copy of the Resource (if found).
      */
     @Override
-    public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
+    public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardReviewResource(Patient.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(Patient.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.LIMITED);
         outcome.setSoTGrade(SoTConduitGradeEnum.PARTIALLY_INFORMATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);

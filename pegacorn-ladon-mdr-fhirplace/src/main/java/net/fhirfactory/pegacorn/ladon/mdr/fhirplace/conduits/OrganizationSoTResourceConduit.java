@@ -124,9 +124,9 @@ public class OrganizationSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
      * @return A Response/Outcome of the operation, including a copy of the Resource (if found).
      */
     @Override
-    public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
+    public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardReviewResource(Organization.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(Organization.class, identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.PARTIALLY_AUTHORITATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);

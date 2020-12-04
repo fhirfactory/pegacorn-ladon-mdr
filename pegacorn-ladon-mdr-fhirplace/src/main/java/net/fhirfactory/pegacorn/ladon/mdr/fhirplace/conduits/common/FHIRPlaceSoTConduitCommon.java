@@ -26,6 +26,7 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import net.fhirfactory.pegacorn.datasets.fhir.r4.internal.systems.DeploymentInstanceDetailInterface;
 import net.fhirfactory.pegacorn.deployment.names.PegacornFHIRPlaceMDRComponentNames;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponseFactory;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
@@ -41,7 +42,10 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
     private PegacornFHIRPlaceMDRComponentNames pegacornFHIRPlaceMDRComponentNames;
 
     @Inject
-    DeploymentInstanceDetailInterface deploymentInstanceDetailInterface;
+    private DeploymentInstanceDetailInterface deploymentInstanceDetailInterface;
+
+    @Inject
+    private ResourceSoTConduitActionResponseFactory sotConduitOutcomeFactory;
 
     @Override
     protected void doSubclassInitialisations(){
@@ -84,6 +88,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
 
     public ResourceSoTConduitActionResponse standardCreateResource(Resource resourceToCreate) {
         getLogger().debug(".standardCreateResource(): Entry, resourceToCreate --> {}", resourceToCreate);
+
         MethodOutcome callOutcome = getFHIRPlaceShardClient()
                 .create()
                 .resource(resourceToCreate)
@@ -106,21 +111,10 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
      * @return
      */
 
-    public ResourceSoTConduitActionResponse standardReviewResource(Class <? extends IBaseResource> resourceClass, Identifier identifier){
-        return(standardGetResource(resourceClass, identifier));
-    }
-
-    /**
-     *
-     * @param resourceClass
-     * @param identifier
-     * @return
-     */
-
-    public ResourceSoTConduitActionResponse standardGetResource(Class <? extends IBaseResource> resourceClass, Identifier identifier){
-        getLogger().debug(".standardGetResource(): Entry, identifier --> {}", identifier);
-        getLogger().debug(".standardGetResource(): Entry, identifier.system --> {}", identifier.getSystem());
-        getLogger().debug(".standardGetResource(): Entry, identifier.value --> {}", identifier.getValue());
+    public ResourceSoTConduitActionResponse standardGetResourceViaIdentifier(Class <? extends IBaseResource> resourceClass, Identifier identifier){
+        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier --> {}", identifier);
+        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.system --> {}", identifier.getSystem());
+        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.value --> {}", identifier.getValue());
         Bundle outputBundle = getFHIRPlaceShardClient()
                 .search()
                 .forResource(resourceClass)
@@ -131,10 +125,10 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         if(hasOutcome){
             hasOutcome = (outputBundle.getTotal() > 0);
         }
-        getLogger().trace(".standardGetResource(): Resource has been retrieved!");
+        getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved!");
         if(!hasOutcome){
             // There was no Resource with that Identifier....
-            getLogger().trace(".standardGetResource(): There was no Resource with that Identifier....");
+            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
             ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
             outcome.setCreated(false);
             outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
@@ -159,7 +153,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         }
         if(outputBundle.getTotal() > 1){
             // There should only be one!
-            getLogger().trace(".standardGetResource(): There was more than one Resource with that Identifier....");
+            getLogger().trace(".standardGetResourceViaIdentifier(): There was more than one Resource with that Identifier....");
             ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
             outcome.setCreated(false);
             outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
@@ -183,7 +177,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             return(outcome);
         }
         // There is only be one!
-        getLogger().trace(".standardGetResource(): There one and only one Resource with that Identifier....");
+        getLogger().trace(".standardGetResourceViaIdentifier(): There one and only one Resource with that Identifier....");
 //        Bundle.BundleEntryComponent bundleEntry = outputBundle.getEntryFirstRep();
 //        Resource retrievedResource = bundleEntry.getResource();
         ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
@@ -208,7 +202,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         outcome.setResource(outputBundle);
         outcome.setId(outputBundle.getIdElement());
         outcome.setIdentifier(identifier);
-        getLogger().debug(".standardReviewResource(): Exit, outcome --> {}", outcome);
+        getLogger().debug(".standardGetResourceViaIdentifier(): Exit, outcome --> {}", outcome);
         return(outcome);
     }
 
