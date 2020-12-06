@@ -27,6 +27,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActi
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.searches.SearchNameEnum;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 
@@ -212,22 +213,11 @@ public abstract class ResourceSoTConduitController {
     // Searches
     //
 
-    protected List<ResourceSoTConduitSearchResponseElement> attemptResourceSearch(Map<Property, Serializable> parameterSet){
+    protected List<ResourceSoTConduitSearchResponseElement> attemptResourceSearch(SearchNameEnum searchName, Map<Property, Serializable> parameterSet){
         getLogger().debug(".attemptResourceSearch(): Entry");
         ArrayList<ResourceSoTConduitSearchResponseElement> loadedResources = new ArrayList<ResourceSoTConduitSearchResponseElement>();
         for(SoTResourceConduit currentConduit: conduitSet) {
-            List<ResourceSoTConduitSearchResponseElement> currentResponse = currentConduit.getResourcesViaSearchCriteria(getResourceType(), parameterSet);
-            loadedResources.addAll(currentResponse);
-        }
-        getLogger().debug(".attemptResourceSearch(): Exit");
-        return(loadedResources);
-    }
-
-    protected List<ResourceSoTConduitSearchResponseElement> attemptResourceSearch(Property attributeName, Element attributeValue){
-        getLogger().debug(".attemptResourceSearch(): Entry");
-        ArrayList<ResourceSoTConduitSearchResponseElement> loadedResources = new ArrayList<ResourceSoTConduitSearchResponseElement>();
-        for(SoTResourceConduit currentConduit: conduitSet) {
-            List<ResourceSoTConduitSearchResponseElement> currentResponse = currentConduit.getResourcesViaSearchCriteria(getResourceType(), attributeName, attributeValue);
+            List<ResourceSoTConduitSearchResponseElement> currentResponse = currentConduit.getResourcesViaSearchCriteria(getResourceType(), searchName, parameterSet);
             loadedResources.addAll(currentResponse);
         }
         getLogger().debug(".attemptResourceSearch(): Exit");
@@ -274,14 +264,8 @@ public abstract class ResourceSoTConduitController {
         return(aggregatedMethodOutcome);
     }
 
-    public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, Property attributeName, Element attributeValue) {
-        List<ResourceSoTConduitSearchResponseElement> responseElements = this.attemptResourceSearch(attributeName, attributeValue);
-        VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateSearchResultSet(responseElements);
-        return(aggregatedMethodOutcome);
-    }
-
-    public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
-        List<ResourceSoTConduitSearchResponseElement> responseElements = this.attemptResourceSearch(parameterSet);
+    public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, SearchNameEnum searchName, Map<Property, Serializable> parameterSet) {
+        List<ResourceSoTConduitSearchResponseElement> responseElements = this.attemptResourceSearch(searchName, parameterSet);
         VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateSearchResultSet(responseElements);
         return(aggregatedMethodOutcome);
     }
