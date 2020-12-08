@@ -31,6 +31,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActi
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
+import net.fhirfactory.pegacorn.petasos.model.itops.PegacornFunctionStatusEnum;
 import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -124,86 +125,30 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.value --> {}", identifier.getValue());
         }
         String activityLocation = resourceClass.getSimpleName() + "SoTResourceConduit::standardGetResourceViaIdentifier()";
-        Bundle outputBundle = (Bundle)getFHIRServiceAccessor().findResourceByIdentifier(resourceClass.getSimpleName(), identifier);
-        if (outputBundle == null){
-            // There was no Resource with that Identifier....
-            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
+        Resource retrievedResource = (Resource)getFHIRServiceAccessor().findResourceByIdentifier(resourceClass.getSimpleName(), identifier);
+        if (retrievedResource == null){
+            // There was no response to the query or it was in error....
+            getLogger().trace(".standardGetResourceViaIdentifier(): There was no response to the query or it was in error....");
             ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                    getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
+                    getSourceOfTruthEndpointName(), PegacornFunctionStatusEnum.FUNCTION_STATUS_OK, null, null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
             outcome.setIdentifier(identifier);
             return(outcome);
         }
         if(getLogger().isTraceEnabled()) {
             IParser iParser = fhirContextUtility.getJsonParser().setPrettyPrint(true);
-            getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved!");
-            getLogger().trace(".standardGetResourceViaIdentifier(): Retrieved Bundle --> {}", iParser.encodeResourceToString(outputBundle));
+            getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved, value --> {}", iParser.encodeResourceToString(retrievedResource));
         }
-        if(outputBundle.getTotal() < 1){
-            // There was no Resource with that Identifier....
-            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
-            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                    getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
-            outcome.setIdentifier(identifier);
-            return(outcome);
-        }
-        if(outputBundle.getTotal() > 1){
-            // There should only be one!
-            getLogger().trace(".standardGetResourceViaIdentifier(): There was more than one Resource with that Identifier....");
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
-            outcome.setCreated(false);
-            outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
-            outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
-            CodeableConcept details = new CodeableConcept();
-            Coding detailsCoding = new Coding();
-            detailsCoding.setSystem("https://www.hl7.org/fhir/codesystem-operation-outcome.html");
-            detailsCoding.setCode("MSG_MULTIPLE_MATCH");
-            detailsCoding.setDisplay("Multiple Resources found matching the query: " + identifier);
-            details.setText("Multiple Resources found matching the query: " + identifier);
-            details.addCoding(detailsCoding);
-            OperationOutcome opOutcome = new OperationOutcome();
-            OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-            newOutcomeComponent.setDiagnostics(activityLocation);
-            newOutcomeComponent.setDetails(details);
-            newOutcomeComponent.setCode(OperationOutcome.IssueType.MULTIPLEMATCHES);
-            newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.ERROR);
-            opOutcome.addIssue(newOutcomeComponent);
-            outcome.setOperationOutcome(opOutcome);
-            outcome.setIdentifier(identifier);
-            return(outcome);
-        }
-        // There is only be one!
         getLogger().trace(".standardGetResourceViaIdentifier(): There one and only one Resource with that Identifier....");
-        Resource retrievedResource = extractResourceFromBundle(outputBundle, resourceClass.getSimpleName());
         ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FINISH, activityLocation);
-        outcome.setCreated(false);
-        outcome.setResource(retrievedResource);
-        outcome.setId(retrievedResource.getIdElement());
+                getSourceOfTruthEndpointName(),
+                PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
+                retrievedResource,
+                null,
+                VirtualDBActionStatusEnum.REVIEW_FINISH,
+                activityLocation);
         outcome.setIdentifier(identifier);
         getLogger().debug(".standardGetResourceViaIdentifier(): Exit, outcome --> {}", outcome);
         return(outcome);
-    }
-
-    protected Resource extractResourceFromBundle(Bundle bundle, String resourceType){
-        getLogger().debug(".extractResourceFromBundle(): Entry, resourceType --> {}", resourceType);
-        if(bundle == null){
-            getLogger().debug(".extractResourceFromBundle(): Exit, Bundle is null!!!");
-            return(null);
-        }
-        if(bundle.getTotal() < 1){
-            getLogger().debug(".extractResourceFromBundle(): Exit, Bundle is empty!!!");
-            return(null);
-        }
-        for(Bundle.BundleEntryComponent currentEntry: bundle.getEntry()){
-            Resource currentResource = currentEntry.getResource();
-            getLogger().trace(".extractResourceFromBundle(): Iterating through bundle contents, current ResourceType --> {}", currentResource.getResourceType());
-            if(currentResource.getResourceType().toString().contentEquals(resourceType)){
-                getLogger().debug(".extractResourceFromBundle(): Exit, Resource Found!!!");
-                return(currentResource);
-            }
-        }
-        getLogger().debug(".extractResourceFromBundle(): Exit, Bundle does not contain Resource of type {}!!!", resourceType);
-        return(null);
     }
 
     /**
@@ -231,55 +176,29 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
                 .resource(resourceClass.getName())
                 .withId(id)
                 .execute();
-        boolean hasOutcome = (retrievedResource != null);
-        if(!hasOutcome){
+        String activityLocation = resourceClass.getSimpleName() + "SoTResourceConduit::standardGetResourceViaIdentifier()";
+        if(retrievedResource == null){
             // There was no Resource with that Identifier....
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
-            outcome.setCreated(false);
-            outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
-            outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
-            CodeableConcept details = new CodeableConcept();
-            Coding detailsCoding = new Coding();
-            detailsCoding.setSystem("https://www.hl7.org/fhir/codesystem-operation-outcome.html");
-            detailsCoding.setCode("MSG_NO_EXIST");
-            String text = "Resource Id " + id.toString() + "does not exist";
-            detailsCoding.setDisplay(text);
-            details.setText(text);
-            details.addCoding(detailsCoding);
-            OperationOutcome opOutcome = new OperationOutcome();
-            OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-            newOutcomeComponent.setDiagnostics("standardReviewResource()" + "::" + "REVIEW");
-            newOutcomeComponent.setDetails(details);
-            newOutcomeComponent.setCode(OperationOutcome.IssueType.NOTFOUND);
-            newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.WARNING);
-            opOutcome.addIssue(newOutcomeComponent);
-            outcome.setOperationOutcome(opOutcome);
-            outcome.setId(id);
+            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
+            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
+                    getSourceOfTruthEndpointName(),
+                    PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
+                    null,
+                    id,
+                    VirtualDBActionStatusEnum.REVIEW_FAILURE,
+                    activityLocation);
             return(outcome);
+        } else {
+            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
+                    getSourceOfTruthEndpointName(),
+                    PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
+                    retrievedResource,
+                    null,
+                    VirtualDBActionStatusEnum.REVIEW_FINISH,
+                    activityLocation);
+            getLogger().debug(".standardReviewResource(): Exit, outcome --> {}", outcome);
+            return (outcome);
         }
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
-        outcome.setCreated(false);
-        outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
-        outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FINISH);
-        CodeableConcept details = new CodeableConcept();
-        Coding detailsCoding = new Coding();
-        detailsCoding.setSystem("https://www.hl7.org/fhir/codesystem-operation-outcome.html"); // TODO Pegacorn specific encoding --> need to check validity
-        detailsCoding.setCode("MSG_RESOURCE_RETRIEVED"); // TODO Pegacorn specific encoding --> need to check validity
-        detailsCoding.setDisplay("Resource Id ("+ id +") has been retrieved");
-        details.setText("Resource Id ("+ id +") has been retrieved");
-        details.addCoding(detailsCoding);
-        OperationOutcome opOutcome = new OperationOutcome();
-        OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-        newOutcomeComponent.setDiagnostics("standardReviewResource()" + "::" + "REVIEW");
-        newOutcomeComponent.setDetails(details);
-        newOutcomeComponent.setCode(OperationOutcome.IssueType.INFORMATIONAL);
-        newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.INFORMATION);
-        opOutcome.addIssue(newOutcomeComponent);
-        outcome.setOperationOutcome(opOutcome);
-        outcome.setResource(retrievedResource);
-        outcome.setId(retrievedResource.getIdElement());
-        getLogger().debug(".standardReviewResource(): Exit, outcome --> {}", outcome);
-        return(outcome);
     }
 
     /**

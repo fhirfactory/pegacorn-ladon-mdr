@@ -96,9 +96,7 @@ public abstract class ResourceSoTConduitController {
         for(SoTResourceConduit currentConduit: conduitSet){
             getLogger().trace(".getResourceFromEachConduit(Identifier): trying conduit --> {}", currentConduit.getConduitName());
             ResourceSoTConduitActionResponse currentResponse = currentConduit.getResourceViaIdentifier(identifier);
-            boolean noResource = currentResponse.getResponseResourceGrade().equals(ResourceGradeEnum.NO_RESOURCE);
-            boolean emptyResource = currentResponse.getResponseResourceGrade().equals(ResourceGradeEnum.EMPTY);
-            if(!(noResource || emptyResource)) {
+            if(!currentResponse.hasResource()) {
                 loadedResources.add(currentResponse);
             }
         }
