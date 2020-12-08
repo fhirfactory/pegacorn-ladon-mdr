@@ -55,7 +55,7 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         boolean hasFailure = false;
         VirtualDBMethodOutcome failedOutcome = null;
         for(ResourceSoTConduitActionResponse currentOutcome: outcomeList) {
-            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.sourceOfTruthEndpoint --> {}", currentOutcome.getSourceOfTruthEndpoint().getIdentifier().getValue());
+            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.sourceOfTruthEndpoint --> {}", currentOutcome.getSourceOfTruthName());
 //            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.resource --> {}", currentOutcome.getResource().getIdElement());
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
                 getLogger().debug(".defaultActionOutcomeAggregationService(): Exit, failed retrieval occured");
