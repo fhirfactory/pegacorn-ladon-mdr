@@ -53,11 +53,11 @@ public class CommunicationSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceClinicalRequestAndResponseMDRAccessor fhirPlaceClinicalRequestAndResponseMDRAccessor;
+    private FHIRPlaceClinicalRequestAndResponseMDRAccessor servicesAccessor;
 
     @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceClinicalRequestAndResponseMDRAccessor);
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override

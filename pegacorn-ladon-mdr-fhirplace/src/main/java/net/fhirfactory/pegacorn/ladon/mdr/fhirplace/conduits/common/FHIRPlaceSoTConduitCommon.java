@@ -21,6 +21,7 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common;
 
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import net.fhirfactory.pegacorn.datasets.fhir.r4.internal.systems.DeploymentInstanceDetailInterface;
@@ -31,6 +32,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
 import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
+import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 
@@ -47,19 +49,22 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
     @Inject
     private ResourceSoTConduitActionResponseFactory sotConduitOutcomeFactory;
 
+    @Inject
+    FHIRContextUtility fhirContextUtility;
+
     @Override
     protected void doSubclassInitialisations(){
-        getJPAServerSecureAccessor().initialise();
+        getFHIRServiceAccessor().initialise();
     }
 
     protected IGenericClient getFHIRPlaceShardClient(){
-        return(getJPAServerSecureAccessor().getClient());
+        return(getFHIRServiceAccessor().getClient());
     }
 
-    abstract protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor();
+    abstract protected PegacornInternalFHIRClientServices specifySecureAccessor();
 
-    protected PegacornInternalFHIRClientServices getJPAServerSecureAccessor(){
-        return(specifyJPAServerSecureAccessor());
+    protected PegacornInternalFHIRClientServices getFHIRServiceAccessor(){
+        return(specifySecureAccessor());
     }
 
     public PegacornFHIRPlaceMDRComponentNames getPegacornFHIRPlaceMDRComponentNames() {
@@ -113,41 +118,31 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
 
     public ResourceSoTConduitActionResponse standardGetResourceViaIdentifier(Class <? extends IBaseResource> resourceClass, Identifier identifier){
         getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier --> {}", identifier);
-        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.system --> {}", identifier.getSystem());
-        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.value --> {}", identifier.getValue());
-        Bundle outputBundle = getFHIRPlaceShardClient()
-                .search()
-                .forResource(resourceClass)
-                .where(DocumentReference.IDENTIFIER.exactly().systemAndValues(identifier.getSystem(), identifier.getValue()))
-                .returnBundle(Bundle.class)
-                .execute();
-        boolean hasOutcome = (outputBundle != null);
-        if(hasOutcome){
-            hasOutcome = (outputBundle.getTotal() > 0);
+        if(getLogger().isDebugEnabled()) {
+            getLogger().debug(".standardGetResourceViaIdentifier(): Entry identifier.type.system --> {}", identifier.getType().getCodingFirstRep().getSystem());
+            getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.type.code --> {}", identifier.getType().getCodingFirstRep().getCode());
+            getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.value --> {}", identifier.getValue());
         }
-        getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved!");
-        if(!hasOutcome){
+        String activityLocation = resourceClass.getSimpleName() + "SoTResourceConduit::standardGetResourceViaIdentifier()";
+        Bundle outputBundle = (Bundle)getFHIRServiceAccessor().findResourceByIdentifier(resourceClass.getSimpleName(), identifier);
+        if (outputBundle == null){
             // There was no Resource with that Identifier....
             getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
-            ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
-            outcome.setCreated(false);
-            outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
-            outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FAILURE);
-            CodeableConcept details = new CodeableConcept();
-            Coding detailsCoding = new Coding();
-            detailsCoding.setSystem("https://www.hl7.org/fhir/codesystem-operation-outcome.html");
-            detailsCoding.setCode("MSG_NO_MATCH");
-            detailsCoding.setDisplay("No Resource found matching the query: " + identifier);
-            details.setText("No Resource found matching the query: " + identifier);
-            details.addCoding(detailsCoding);
-            OperationOutcome opOutcome = new OperationOutcome();
-            OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-            newOutcomeComponent.setDiagnostics("standardReviewResource()" + "::" + "REVIEW");
-            newOutcomeComponent.setDetails(details);
-            newOutcomeComponent.setCode(OperationOutcome.IssueType.NOTFOUND);
-            newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.WARNING);
-            opOutcome.addIssue(newOutcomeComponent);
-            outcome.setOperationOutcome(opOutcome);
+            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
+                    getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
+            outcome.setIdentifier(identifier);
+            return(outcome);
+        }
+        if(getLogger().isTraceEnabled()) {
+            IParser iParser = fhirContextUtility.getJsonParser().setPrettyPrint(true);
+            getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved!");
+            getLogger().trace(".standardGetResourceViaIdentifier(): Retrieved Bundle --> {}", iParser.encodeResourceToString(outputBundle));
+        }
+        if(outputBundle.getTotal() < 1){
+            // There was no Resource with that Identifier....
+            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
+            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
+                    getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
             outcome.setIdentifier(identifier);
             return(outcome);
         }
@@ -167,7 +162,7 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
             details.addCoding(detailsCoding);
             OperationOutcome opOutcome = new OperationOutcome();
             OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-            newOutcomeComponent.setDiagnostics("standardReviewResource()" + "::" + "REVIEW");
+            newOutcomeComponent.setDiagnostics(activityLocation);
             newOutcomeComponent.setDetails(details);
             newOutcomeComponent.setCode(OperationOutcome.IssueType.MULTIPLEMATCHES);
             newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.ERROR);
@@ -178,32 +173,37 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         }
         // There is only be one!
         getLogger().trace(".standardGetResourceViaIdentifier(): There one and only one Resource with that Identifier....");
-//        Bundle.BundleEntryComponent bundleEntry = outputBundle.getEntryFirstRep();
-//        Resource retrievedResource = bundleEntry.getResource();
-        ResourceSoTConduitActionResponse outcome = new ResourceSoTConduitActionResponse(getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint());
+        Resource retrievedResource = extractResourceFromBundle(outputBundle, resourceClass.getSimpleName());
+        ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
+                getSourceOfTruthOwningOrganization(), getSourceOfTruthEndpoint(), null, VirtualDBActionStatusEnum.REVIEW_FINISH, activityLocation);
         outcome.setCreated(false);
-        outcome.setCausalAction(VirtualDBActionTypeEnum.REVIEW);
-        outcome.setStatusEnum(VirtualDBActionStatusEnum.REVIEW_FINISH);
-        CodeableConcept details = new CodeableConcept();
-        Coding detailsCoding = new Coding();
-        detailsCoding.setSystem("https://www.hl7.org/fhir/codesystem-operation-outcome.html"); // TODO Pegacorn specific encoding --> need to check validity
-        detailsCoding.setCode("MSG_RESOURCE_RETRIEVED"); // TODO Pegacorn specific encoding --> need to check validity
-        detailsCoding.setDisplay("Resource Id ("+ identifier +") has been retrieved");
-        details.setText("Resource Id ("+ identifier +") has been retrieved");
-        details.addCoding(detailsCoding);
-        OperationOutcome opOutcome = new OperationOutcome();
-        OperationOutcome.OperationOutcomeIssueComponent newOutcomeComponent = new OperationOutcome.OperationOutcomeIssueComponent();
-        newOutcomeComponent.setDiagnostics("standardReviewResource()" + "::" + "REVIEW");
-        newOutcomeComponent.setDetails(details);
-        newOutcomeComponent.setCode(OperationOutcome.IssueType.INFORMATIONAL);
-        newOutcomeComponent.setSeverity(OperationOutcome.IssueSeverity.INFORMATION);
-        opOutcome.addIssue(newOutcomeComponent);
-        outcome.setOperationOutcome(opOutcome);
-        outcome.setResource(outputBundle);
-        outcome.setId(outputBundle.getIdElement());
+        outcome.setResource(retrievedResource);
+        outcome.setId(retrievedResource.getIdElement());
         outcome.setIdentifier(identifier);
         getLogger().debug(".standardGetResourceViaIdentifier(): Exit, outcome --> {}", outcome);
         return(outcome);
+    }
+
+    protected Resource extractResourceFromBundle(Bundle bundle, String resourceType){
+        getLogger().debug(".extractResourceFromBundle(): Entry, resourceType --> {}", resourceType);
+        if(bundle == null){
+            getLogger().debug(".extractResourceFromBundle(): Exit, Bundle is null!!!");
+            return(null);
+        }
+        if(bundle.getTotal() < 1){
+            getLogger().debug(".extractResourceFromBundle(): Exit, Bundle is empty!!!");
+            return(null);
+        }
+        for(Bundle.BundleEntryComponent currentEntry: bundle.getEntry()){
+            Resource currentResource = currentEntry.getResource();
+            getLogger().trace(".extractResourceFromBundle(): Iterating through bundle contents, current ResourceType --> {}", currentResource.getResourceType());
+            if(currentResource.getResourceType().toString().contentEquals(resourceType)){
+                getLogger().debug(".extractResourceFromBundle(): Exit, Resource Found!!!");
+                return(currentResource);
+            }
+        }
+        getLogger().debug(".extractResourceFromBundle(): Exit, Bundle does not contain Resource of type {}!!!", resourceType);
+        return(null);
     }
 
     /**

@@ -53,7 +53,7 @@ public class HealthcareServiceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceBaseEntitiesMDRAccessor fhirPlaceBaseEntitiesMDRAccessor;
+    private FHIRPlaceBaseEntitiesMDRAccessor servicesAccessor;
 
     @Override
     protected Logger getLogger(){
@@ -83,8 +83,8 @@ public class HealthcareServiceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceBaseEntitiesMDRAccessor);
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override

@@ -24,6 +24,8 @@ package net.fhirfactory.pegacorn.ladon.mdr.conduit.aggregationservices.defaultst
 import java.util.Collections;
 import java.util.List;
 
+import ca.uhn.fhir.parser.IParser;
+import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -57,6 +59,7 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
             getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.sourceOfTruthEndpoint --> {}", currentOutcome.getSourceOfTruthEndpoint().getIdentifier().getValue());
 //            getLogger().info(".defaultActionOutcomeAggregationService(): currentOutcome.resource --> {}", currentOutcome.getResource().getIdElement());
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
+                getLogger().debug(".defaultActionOutcomeAggregationService(): Exit, failed retrieval occured");
                 return(currentOutcome);
             }
         }
@@ -65,6 +68,15 @@ public abstract class WholeResourceBasedAggregationServiceBase extends DefaultRe
         // Now, return instance that has Precedence
         ResourceSoTConduitActionResponse outcome = outcomeList.get(0);
 //        this.mapIdToIdentifier(outcome);
+        if(getLogger().isTraceEnabled()){
+            if(outcome.getResource() != null){
+                IParser r4Parser = getFhirContextUtility().getJsonParser().setPrettyPrint(true);
+                getLogger().trace(".defaultActionOutcomeAggregationService(): Selected Resource --> {}", r4Parser.encodeResourceToString(outcome.getResource()));
+            } else {
+                getLogger().trace(".defaultActionOutcomeAggregationService(): No resource in response!!!!");
+            }
+        }
+        getLogger().debug(".defaultActionOutcomeAggregationService(): Exit, returning suitable candidate resource");
         return(outcome);
     }
 

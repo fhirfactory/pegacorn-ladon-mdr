@@ -53,7 +53,7 @@ public class ProcedureSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceClinicalSummaryMDRAccessor fhirPlaceClinicalSummaryMDRAccessor;
+    private FHIRPlaceClinicalSummaryMDRAccessor servicesAccessor;
 
     @Override
     protected Logger getLogger(){
@@ -83,8 +83,8 @@ public class ProcedureSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     }
 
     @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceClinicalSummaryMDRAccessor);
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override

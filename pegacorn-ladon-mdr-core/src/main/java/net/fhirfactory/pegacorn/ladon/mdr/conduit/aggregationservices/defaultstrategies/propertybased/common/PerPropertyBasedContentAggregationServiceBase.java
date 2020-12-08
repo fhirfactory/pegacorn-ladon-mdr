@@ -91,10 +91,14 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
     //
 
     protected VirtualDBMethodOutcome defaultActionOutcomeAggregationService(VirtualDBActionTypeEnum action, List<ResourceSoTConduitActionResponse> outcomeList){
+        getLogger().debug(".defaultActionOutcomeAggregationService(): Entry, action --> {}", action);
         if(outcomeList == null){
             VirtualDBMethodOutcome aggregatedOutcome = generateBadAttributeOutcome("defaultCreateActionOutcomeAggregation()", action, "Empty Outcome List!!!");
+            getLogger().debug(".defaultActionOutcomeAggregationService(): Exit, outcomeList is null");
+            return(aggregatedOutcome);
         }
         if(outcomeList.isEmpty()){
+            getLogger().debug(".defaultActionOutcomeAggregationService(): Exit, outcomeList is empty");
             VirtualDBMethodOutcome aggregatedOutcome = generateBadAttributeOutcome("defaultCreateActionOutcomeAggregation()", action, "Empty Outcome List!!!");
         }
         boolean hasFailure = false;
@@ -103,7 +107,13 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
                 return(currentOutcome);
             }
+            boolean emptyResource = currentOutcome.getResponseResourceGrade().equals(ResourceGradeEnum.EMPTY);
+            boolean noResource = currentOutcome.getResponseResourceGrade().equals(ResourceGradeEnum.NO_RESOURCE);
+            if(emptyResource || noResource){
+                return(currentOutcome);
+            }
         }
+        getLogger().trace(".defaultActionOutcomeAggregationService(): A good outcome is detected");
         // Sort the List in terms of Precendence
         Collections.sort(outcomeList);
         // Now make sure there is an "Authoritative Id" assigned to the Resource

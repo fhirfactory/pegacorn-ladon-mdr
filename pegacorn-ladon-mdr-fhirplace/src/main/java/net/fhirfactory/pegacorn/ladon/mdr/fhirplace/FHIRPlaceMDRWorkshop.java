@@ -64,10 +64,7 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
 //    @Inject
 //    ValueSetSoTResourceConduit valueSetSoTResourceConduit;
 
-
-
-    @PostConstruct
-    public void initialise(){
+    protected void invokePostConstructInitialisation(){
         getLogger().debug(".initialise(): Entry");
         getLogger().trace(".initialise(): initialising DocumentReferenceSoTResourceConduit");
         documentReferenceSoTResourceConduit.initialise();

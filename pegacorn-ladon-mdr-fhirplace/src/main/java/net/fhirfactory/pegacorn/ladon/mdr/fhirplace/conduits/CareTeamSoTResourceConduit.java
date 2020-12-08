@@ -53,7 +53,7 @@ public class CareTeamSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceClinicalCareProvisionMDRAccessor fhirPlaceClinicalCareProvisionMDRAccessor;
+    private FHIRPlaceClinicalCareProvisionMDRAccessor servicesAccessor;
 
     @Override
     protected Logger getLogger(){
@@ -63,6 +63,11 @@ public class CareTeamSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     @Override
     protected String specifySourceOfTruthEndpointSystemName() {
         return (getPegacornFHIRPlaceMDRComponentNames().getClinicalCareProvisionPegacornMDRSubsystem());
+    }
+
+    @Override
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override
@@ -80,11 +85,6 @@ public class CareTeamSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
             return(bestIdentifier);
         }
         return(null);
-    }
-
-    @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceClinicalCareProvisionMDRAccessor);
     }
 
     @Override

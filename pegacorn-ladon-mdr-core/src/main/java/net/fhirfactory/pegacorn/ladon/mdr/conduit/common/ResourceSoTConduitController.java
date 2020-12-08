@@ -26,11 +26,14 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcomeFactory;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.searches.SearchNameEnum;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,6 +45,9 @@ public abstract class ResourceSoTConduitController {
 
     private HashSet<SoTResourceConduit> conduitSet;
     private ResourceType resourceType;
+
+    @Inject
+    VirtualDBMethodOutcomeFactory outcomeFactory;
 
     public ResourceSoTConduitController(){
         this.conduitSet = new HashSet<>();
@@ -85,15 +91,18 @@ public abstract class ResourceSoTConduitController {
      * @return
      */
     protected List<ResourceSoTConduitActionResponse> getResourceFromEachConduit(Identifier identifier){
-        getLogger().debug(".getResourceFromEachConduit(): Entry, identifier (Identifier)--> {}", identifier);
+        getLogger().debug(".getResourceFromEachConduit(Identifier): Entry, identifier (Identifier)--> {}", identifier);
         ArrayList<ResourceSoTConduitActionResponse> loadedResources = new ArrayList<ResourceSoTConduitActionResponse>();
         for(SoTResourceConduit currentConduit: conduitSet){
+            getLogger().trace(".getResourceFromEachConduit(Identifier): trying conduit --> {}", currentConduit.getConduitName());
             ResourceSoTConduitActionResponse currentResponse = currentConduit.getResourceViaIdentifier(identifier);
-            if(currentResponse.getResponseResourceGrade() != ResourceGradeEnum.EMPTY) {
+            boolean noResource = currentResponse.getResponseResourceGrade().equals(ResourceGradeEnum.NO_RESOURCE);
+            boolean emptyResource = currentResponse.getResponseResourceGrade().equals(ResourceGradeEnum.EMPTY);
+            if(!(noResource || emptyResource)) {
                 loadedResources.add(currentResponse);
             }
         }
-        getLogger().debug(".getResourceFromEachConduit(): Exit");
+        getLogger().debug(".getResourceFromEachConduit(Identifier): Exit");
         return(loadedResources);
     }
 
@@ -107,7 +116,7 @@ public abstract class ResourceSoTConduitController {
      * @return
      */
     protected List<ResourceSoTConduitActionResponse> getResourceFromEachConduit(IdType id){
-        getLogger().debug(".getResourceFromEachConduit(): Entry, id (IdType)--> {}", id);
+        getLogger().debug(".getResourceFromEachConduit(IdType): Entry, id (IdType)--> {}", id);
         ArrayList<ResourceSoTConduitActionResponse> loadedResources = new ArrayList<ResourceSoTConduitActionResponse>();
         for(SoTResourceConduit currentConduit: conduitSet){
             ResourceSoTConduitActionResponse currentResponse = currentConduit.reviewResource(id);
@@ -115,7 +124,7 @@ public abstract class ResourceSoTConduitController {
                 loadedResources.add(currentResponse);
             }
         }
-        getLogger().debug(".getResourceFromEachConduit(): Exit");
+        getLogger().debug(".getResourceFromEachConduit(IdType): Exit");
         return(loadedResources);
     }
 
@@ -236,8 +245,14 @@ public abstract class ResourceSoTConduitController {
 
     public VirtualDBMethodOutcome reviewResource(Identifier identifier) {
         List<ResourceSoTConduitActionResponse> methodOutcomes = this.getResourceFromEachConduit(identifier);
-        VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateGetResponseSet(methodOutcomes);
-        return(aggregatedMethodOutcome);
+        if(methodOutcomes.isEmpty()){
+            String activityLocation = getResourceType().toString() + "reviewResource()";
+            VirtualDBMethodOutcome aggregatedMethodOutcome = outcomeFactory.createResourceActivityOutcome(null, VirtualDBActionStatusEnum.REVIEW_FAILURE,activityLocation);
+            return(aggregatedMethodOutcome);
+        } else {
+            VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateGetResponseSet(methodOutcomes);
+            return (aggregatedMethodOutcome);
+        }
     }
 
     public VirtualDBMethodOutcome reviewResource(IdType id) {

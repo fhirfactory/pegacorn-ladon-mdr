@@ -57,11 +57,16 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceFoundationDocumentsMDRAccessor fhirPlaceFoundationDocumentsMDRAccessor;
+    private FHIRPlaceFoundationDocumentsMDRAccessor servicesAccessor;
 
     @Override
     protected Logger getLogger(){
         return(LOG);
+    }
+
+    @Override
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override
@@ -84,11 +89,6 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
             return(bestIdentifier);
         }
         return(null);
-    }
-
-    @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceFoundationDocumentsMDRAccessor);
     }
 
     @Override
@@ -303,7 +303,7 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
         return(searchResponse);
     }
 
-    private ResourceSoTConduitSearchResponseElement getDocumentReferenceByIdentifier(Map<Property, Serializable> parameterSet) {
+/*    private ResourceSoTConduitSearchResponseElement getDocumentReferenceByIdentifier(Map<Property, Serializable> parameterSet) {
         boolean hasDocumentReferenceIdentifierInfo = false;
         TokenParam documentReferenceIdentifierParam = null;
         Set<Property> propertyList = parameterSet.keySet();
@@ -337,4 +337,8 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
         }
         return(searchResponse);
     }
+
+*/
+
+
 }

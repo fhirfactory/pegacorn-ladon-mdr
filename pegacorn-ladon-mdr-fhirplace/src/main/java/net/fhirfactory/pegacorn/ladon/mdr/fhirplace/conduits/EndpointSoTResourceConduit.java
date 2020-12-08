@@ -53,11 +53,11 @@ public class EndpointSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceBaseEntitiesMDRAccessor fhirPlaceBaseEntitiesMDRAccessor;
+    private FHIRPlaceBaseEntitiesMDRAccessor servicesAccessor;
 
     @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceBaseEntitiesMDRAccessor);
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override

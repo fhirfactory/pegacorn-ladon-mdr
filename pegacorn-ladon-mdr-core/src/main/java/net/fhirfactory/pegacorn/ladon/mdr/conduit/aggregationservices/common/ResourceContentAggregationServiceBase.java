@@ -6,6 +6,7 @@ import net.fhirfactory.pegacorn.datasets.fhir.r4.common.SourceOfTruthRIDIdentifi
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.businesskey.VirtualDBKeyManagement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.*;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
+import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 
@@ -28,6 +29,13 @@ public abstract class ResourceContentAggregationServiceBase {
 
     @Inject
     private SourceOfTruthRIDIdentifierBuilder sourceOfTruthRIDIdentifierBuilder;
+
+    @Inject
+    private FHIRContextUtility fhirContextUtility;
+
+    protected FHIRContextUtility getFhirContextUtility(){
+        return(fhirContextUtility);
+    }
 
     protected VirtualDBKeyManagement getIdentifierPicker(){return(VirtualDBKeyHelpers);}
 
