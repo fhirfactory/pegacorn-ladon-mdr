@@ -24,7 +24,7 @@ package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.DocumentReferenceSoTConduitController;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.DocumentReferenceSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceFoundationDocumentsMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.businesskey.VirtualDBKeyManagement;
@@ -32,6 +32,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionStatusEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.searches.SearchNameEnum;
 import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.hl7.fhir.r4.model.*;
@@ -131,9 +132,11 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     @Override
     public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".reviewResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(DocumentReference.class, identifier);
-        outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
-        outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(ResourceType.DocumentReference.toString(), identifier);
+        if(outcome.getStatusEnum().equals(VirtualDBActionStatusEnum.REVIEW_FINISH)) {
+            outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
+            outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
+        }
         LOG.debug(".reviewResource(): Exit, outcome --> {}", outcome);
         return(outcome);
     }

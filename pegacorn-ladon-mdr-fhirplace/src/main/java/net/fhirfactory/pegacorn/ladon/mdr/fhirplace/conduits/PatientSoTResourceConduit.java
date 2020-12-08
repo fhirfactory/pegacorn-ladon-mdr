@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.PatientSoTConduitController;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.PatientSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceBaseIndividualsMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.businesskey.VirtualDBKeyManagement;
@@ -127,7 +127,7 @@ public class PatientSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     @Override
     public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(Patient.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(ResourceType.Patient.toString(), identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.LIMITED);
         outcome.setSoTGrade(SoTConduitGradeEnum.PARTIALLY_INFORMATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);

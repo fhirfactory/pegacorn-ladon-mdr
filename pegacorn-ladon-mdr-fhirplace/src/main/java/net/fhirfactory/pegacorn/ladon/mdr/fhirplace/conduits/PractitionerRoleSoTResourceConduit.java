@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.PractitionerRoleSoTConduitController;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.PractitionerRoleSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceBaseIndividualsMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.businesskey.VirtualDBKeyManagement;
@@ -127,7 +127,7 @@ public class PractitionerRoleSoTResourceConduit extends FHIRPlaceSoTConduitCommo
     @Override
     public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(PractitionerRole.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(ResourceType.PractitionerRole.toString(), identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.ESTABLISHED);
         outcome.setSoTGrade(SoTConduitGradeEnum.PARTIALLY_AUTHORITATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);

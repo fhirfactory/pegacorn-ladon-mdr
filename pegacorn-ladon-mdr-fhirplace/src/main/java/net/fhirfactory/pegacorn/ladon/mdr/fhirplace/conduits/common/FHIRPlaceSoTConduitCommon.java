@@ -26,6 +26,7 @@ import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import net.fhirfactory.pegacorn.datasets.fhir.r4.internal.systems.DeploymentInstanceDetailInterface;
 import net.fhirfactory.pegacorn.deployment.names.PegacornFHIRPlaceMDRComponentNames;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.core.SoTResourceConduitFunctionBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponseFactory;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTResourceConduit;
@@ -39,34 +40,13 @@ import org.hl7.fhir.r4.model.*;
 
 import javax.inject.Inject;
 
-public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
+public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduitFunctionBase {
 
     @Inject
     private PegacornFHIRPlaceMDRComponentNames pegacornFHIRPlaceMDRComponentNames;
 
     @Inject
     private DeploymentInstanceDetailInterface deploymentInstanceDetailInterface;
-
-    @Inject
-    private ResourceSoTConduitActionResponseFactory sotConduitOutcomeFactory;
-
-    @Inject
-    FHIRContextUtility fhirContextUtility;
-
-    @Override
-    protected void doSubclassInitialisations(){
-        getFHIRServiceAccessor().initialise();
-    }
-
-    protected IGenericClient getFHIRPlaceShardClient(){
-        return(getFHIRServiceAccessor().getClient());
-    }
-
-    abstract protected PegacornInternalFHIRClientServices specifySecureAccessor();
-
-    protected PegacornInternalFHIRClientServices getFHIRServiceAccessor(){
-        return(specifySecureAccessor());
-    }
 
     public PegacornFHIRPlaceMDRComponentNames getPegacornFHIRPlaceMDRComponentNames() {
         return pegacornFHIRPlaceMDRComponentNames;
@@ -110,98 +90,10 @@ public abstract class FHIRPlaceSoTConduitCommon extends SoTResourceConduit {
         return(outcome);
     }
 
-    /**
-     *
-     * @param resourceClass
-     * @param identifier
-     * @return
-     */
 
-    public ResourceSoTConduitActionResponse standardGetResourceViaIdentifier(Class <? extends IBaseResource> resourceClass, Identifier identifier){
-        getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier --> {}", identifier);
-        if(getLogger().isDebugEnabled()) {
-            getLogger().debug(".standardGetResourceViaIdentifier(): Entry identifier.type.system --> {}", identifier.getType().getCodingFirstRep().getSystem());
-            getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.type.code --> {}", identifier.getType().getCodingFirstRep().getCode());
-            getLogger().debug(".standardGetResourceViaIdentifier(): Entry, identifier.value --> {}", identifier.getValue());
-        }
-        String activityLocation = resourceClass.getSimpleName() + "SoTResourceConduit::standardGetResourceViaIdentifier()";
-        Resource retrievedResource = (Resource)getFHIRServiceAccessor().findResourceByIdentifier(resourceClass.getSimpleName(), identifier);
-        if (retrievedResource == null){
-            // There was no response to the query or it was in error....
-            getLogger().trace(".standardGetResourceViaIdentifier(): There was no response to the query or it was in error....");
-            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                    getSourceOfTruthEndpointName(), PegacornFunctionStatusEnum.FUNCTION_STATUS_OK, null, null, VirtualDBActionStatusEnum.REVIEW_FAILURE, activityLocation);
-            outcome.setIdentifier(identifier);
-            return(outcome);
-        }
-        if(getLogger().isTraceEnabled()) {
-            IParser iParser = fhirContextUtility.getJsonParser().setPrettyPrint(true);
-            getLogger().trace(".standardGetResourceViaIdentifier(): Resource has been retrieved, value --> {}", iParser.encodeResourceToString(retrievedResource));
-        }
-        getLogger().trace(".standardGetResourceViaIdentifier(): There one and only one Resource with that Identifier....");
-        ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                getSourceOfTruthEndpointName(),
-                PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
-                retrievedResource,
-                null,
-                VirtualDBActionStatusEnum.REVIEW_FINISH,
-                activityLocation);
-        outcome.setIdentifier(identifier);
-        getLogger().debug(".standardGetResourceViaIdentifier(): Exit, outcome --> {}", outcome);
-        return(outcome);
-    }
 
-    /**
-     *
-     * @param resourceClass
-     * @param id
-     * @return
-     */
 
-    public ResourceSoTConduitActionResponse standardReviewResource(Class <? extends IBaseResource> resourceClass, IdType id){
-        return(standardGetResource(resourceClass, id));
-    }
-
-    /**
-     *
-     * @param resourceClass
-     * @param id
-     * @return
-     */
-
-    public ResourceSoTConduitActionResponse standardGetResource(Class <? extends IBaseResource> resourceClass, IdType id){
-        getLogger().debug(".standardGetResource(): Entry, identifier --> {}", id);
-        Resource retrievedResource = (Resource)getFHIRPlaceShardClient()
-                .read()
-                .resource(resourceClass.getName())
-                .withId(id)
-                .execute();
-        String activityLocation = resourceClass.getSimpleName() + "SoTResourceConduit::standardGetResourceViaIdentifier()";
-        if(retrievedResource == null){
-            // There was no Resource with that Identifier....
-            getLogger().trace(".standardGetResourceViaIdentifier(): There was no Resource with that Identifier....");
-            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                    getSourceOfTruthEndpointName(),
-                    PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
-                    null,
-                    id,
-                    VirtualDBActionStatusEnum.REVIEW_FAILURE,
-                    activityLocation);
-            return(outcome);
-        } else {
-            ResourceSoTConduitActionResponse outcome = sotConduitOutcomeFactory.createResourceConduitActionResponse(
-                    getSourceOfTruthEndpointName(),
-                    PegacornFunctionStatusEnum.FUNCTION_STATUS_OK,
-                    retrievedResource,
-                    null,
-                    VirtualDBActionStatusEnum.REVIEW_FINISH,
-                    activityLocation);
-            getLogger().debug(".standardReviewResource(): Exit, outcome --> {}", outcome);
-            return (outcome);
-        }
-    }
-
-    /**
+     /**
      *
      * @param resourceToUpdate
      * @return
