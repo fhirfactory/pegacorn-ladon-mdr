@@ -21,6 +21,21 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.common;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Property;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.ResourceType;
+import org.slf4j.Logger;
+
 import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.aggregationservices.common.ResourceContentAggregationServiceBase;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
@@ -30,15 +45,6 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBAction
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcomeFactory;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.searches.SearchNameEnum;
-import org.hl7.fhir.r4.model.*;
-import org.slf4j.Logger;
-
-import javax.inject.Inject;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
 public abstract class ResourceSoTConduitController {
     abstract protected Logger getLogger();
@@ -91,16 +97,16 @@ public abstract class ResourceSoTConduitController {
      * @return
      */
     protected List<ResourceSoTConduitActionResponse> getResourceFromEachConduit(Identifier identifier){
-        getLogger().debug(".getResourceFromEachConduit(Identifier): Entry, identifier (Identifier)--> {}", identifier);
+        getLogger().info(".getResourceFromEachConduit(Identifier): Entry, identifier (Identifier)--> {}", identifier);
         ArrayList<ResourceSoTConduitActionResponse> loadedResources = new ArrayList<ResourceSoTConduitActionResponse>();
         for(SoTResourceConduit currentConduit: conduitSet){
-            getLogger().trace(".getResourceFromEachConduit(Identifier): trying conduit --> {}", currentConduit.getConduitName());
+            getLogger().info(".getResourceFromEachConduit(Identifier): trying conduit --> {}", currentConduit.getConduitName());
             ResourceSoTConduitActionResponse currentResponse = currentConduit.getResourceViaIdentifier(identifier);
             if(currentResponse.hasResource() && currentResponse.getStatusEnum().equals(VirtualDBActionStatusEnum.REVIEW_FINISH)) {
                 loadedResources.add(currentResponse);
             }
         }
-        getLogger().debug(".getResourceFromEachConduit(Identifier): Exit, Number of Elements in List --> {}", loadedResources.size());
+        getLogger().info(".getResourceFromEachConduit(Identifier): Exit, Number of Elements in List --> {}", loadedResources.size());
         return(loadedResources);
     }
 
@@ -243,18 +249,18 @@ public abstract class ResourceSoTConduitController {
     }
 
     public VirtualDBMethodOutcome reviewResource(Identifier identifier) {
-        getLogger().debug(".reviewResource(): Entry, identifier --> {}");
+        getLogger().info(".reviewResource(): Entry, identifier --> {}");
         List<ResourceSoTConduitActionResponse> methodOutcomes = this.getResourceFromEachConduit(identifier);
         if(methodOutcomes.isEmpty()){
-            getLogger().trace(".reviewResource(): Failed to find a resource, generating failed outcome");
+            getLogger().info(".reviewResource(): Failed to find a resource, generating failed outcome");
             String activityLocation = getResourceType().toString() + "reviewResource()";
             VirtualDBMethodOutcome aggregatedMethodOutcome = outcomeFactory.createResourceActivityOutcome(null, VirtualDBActionStatusEnum.REVIEW_FAILURE,activityLocation);
-            getLogger().debug(".reviewResource(): Exit, failed to find a resource from any Source of Truth, exiting");
+            getLogger().info(".reviewResource(): Exit, failed to find a resource from any Source of Truth, exiting");
             return(aggregatedMethodOutcome);
         } else {
-            getLogger().trace(".reviewResource(): Exit, found at least one resource, aggregating results");
+            getLogger().info(".reviewResource(): Exit, found at least one resource, aggregating results");
             VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateGetResponseSet(methodOutcomes);
-            getLogger().debug(".reviewResource(): Exit, found at least one resource, returning it");
+            getLogger().info(".reviewResource(): Exit, found at least one resource, returning it");
             return (aggregatedMethodOutcome);
         }
     }
