@@ -225,7 +225,7 @@ public abstract class ResourceSoTConduitController {
         getLogger().debug(".attemptResourceSearch(): Entry");
         ArrayList<ResourceSoTConduitSearchResponseElement> loadedResources = new ArrayList<ResourceSoTConduitSearchResponseElement>();
         for(SoTResourceConduit currentConduit: conduitSet) {
-            List<ResourceSoTConduitSearchResponseElement> currentResponse = currentConduit.getResourcesViaSearchCriteria(getResourceType(), searchName, parameterSet);
+            List<ResourceSoTConduitSearchResponseElement> currentResponse = currentConduit.searchSourceOfTruthUsingCriteria(getResourceType(), searchName, parameterSet);
             loadedResources.addAll(currentResponse);
         }
         getLogger().debug(".attemptResourceSearch(): Exit");
@@ -284,8 +284,10 @@ public abstract class ResourceSoTConduitController {
     }
 
     public VirtualDBMethodOutcome getResourcesViaSearchCriteria(ResourceType resourceType, SearchNameEnum searchName, Map<Property, Serializable> parameterSet) {
+        getLogger().debug(".getResourcesViaSearchCriteria(): Entry");
         List<ResourceSoTConduitSearchResponseElement> responseElements = this.attemptResourceSearch(searchName, parameterSet);
         VirtualDBMethodOutcome aggregatedMethodOutcome = getAggregationService().aggregateSearchResultSet(responseElements);
+        getLogger().debug(".getResourcesViaSearchCriteria(): Exit");
         return(aggregatedMethodOutcome);
     }
 }

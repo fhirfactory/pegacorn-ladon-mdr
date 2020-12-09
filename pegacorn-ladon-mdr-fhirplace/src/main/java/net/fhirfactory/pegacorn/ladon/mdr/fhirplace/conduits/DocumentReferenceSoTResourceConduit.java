@@ -189,9 +189,9 @@ public class DocumentReferenceSoTResourceConduit extends FHIRPlaceSoTConduitComm
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, SearchNameEnum searchName, Map<Property, Serializable> parameterSet) {
+    public List<ResourceSoTConduitSearchResponseElement> searchSourceOfTruthUsingCriteria(ResourceType resourceType, SearchNameEnum searchName, Map<Property, Serializable> parameterSet) {
         ArrayList<ResourceSoTConduitSearchResponseElement> resourceList = new ArrayList<ResourceSoTConduitSearchResponseElement>();
-        if(isDocumentReferenceSearchByTypeAndDate(parameterSet)) {
+        if(searchName.equals(SearchNameEnum.DOCUMENT_REFERENCE_DATE_AND_TYPE)) {
             resourceList.add(getDocumentReferenceByTypeAndDate(parameterSet));
         }
         return(resourceList);
