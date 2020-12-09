@@ -21,16 +21,18 @@
  */
 package net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.aggregationservices.defaultstrategies.propertybased.common;
 
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.aggregationservices.defaultstrategies.common.DefaultResourceContentAggregationServiceBase;
-import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.*;
-import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
-import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
-import org.hl7.fhir.r4.model.*;
-
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.inject.Inject;
+
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.aggregationservices.defaultstrategies.common.DefaultResourceContentAggregationServiceBase;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBActionTypeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.operations.VirtualDBMethodOutcome;
 
 public abstract class PerPropertyBasedContentAggregationServiceBase extends DefaultResourceContentAggregationServiceBase {
 
@@ -104,8 +106,17 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
             if(!successfulCompletion(currentOutcome.getStatusEnum())){
                 return(currentOutcome);
             }
-            boolean emptyResource = currentOutcome.getResponseResourceGrade().equals(ResourceGradeEnum.EMPTY);
-            boolean noResource = currentOutcome.getResponseResourceGrade().equals(ResourceGradeEnum.NO_RESOURCE);
+            boolean emptyResource = true;
+            if(currentOutcome.getResponseResourceGrade() == null ) {
+                emptyResource = false;
+            } else {
+                if(currentOutcome.getResponseResourceGrade().equals(ResourceGradeEnum.EMPTY)){
+                    emptyResource = true;
+                } else {
+                    emptyResource = false;
+                }
+            }
+            boolean noResource = !(currentOutcome.hasResource());
             if(emptyResource || noResource){
                 return(currentOutcome);
             }
@@ -121,15 +132,15 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
                 resourceId = currentOutcome.getId().getValue();
             }
         }
-        if(resourceId != null) {
-            for (ResourceSoTConduitActionResponse currentOutcome : outcomeList) {
-                Resource currentResource = (Resource) currentOutcome.getResource();
-                currentResource.setId(resourceId);
-            }
-        }
+//        if(resourceId != null) {
+//            for (ResourceSoTConduitActionResponse currentOutcome : outcomeList) {
+//                Resource currentResource = (Resource) currentOutcome.getResource();
+//                currentResource.setId(resourceId);
+//            }
+//        }
         // If there is only one, return it
         if(outcomeList.size() == 1) {
-            mapIdToIdentifier(precendenceResponse);
+//            mapIdToIdentifier(precendenceResponse);
             return(precendenceResponse);
         }
         // Otherwise Aggregate the Resource, Property-by-Property
@@ -137,7 +148,7 @@ public abstract class PerPropertyBasedContentAggregationServiceBase extends Defa
         otherResponseSet.addAll(outcomeList);
         otherResponseSet.remove(precendenceResponse);
         for(ResourceSoTConduitActionResponse currentOutcome: otherResponseSet){
-            mapIdToIdentifier(currentOutcome);
+//            mapIdToIdentifier(currentOutcome);
             aggregateResourceSuperClassByAttribute(precendenceResponse, currentOutcome);
             aggregateDomainResourceSuperClassByAttribute(precendenceResponse, currentOutcome);
             aggregateIntoBasePropertyByProperty(precendenceResponse, currentOutcome);
