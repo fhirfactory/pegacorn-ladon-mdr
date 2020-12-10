@@ -28,14 +28,14 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
     @Inject
     CommunicationSoTResourceConduit communicationSoTResourceConduit;
 
+//    @Inject
+//    EncounterSoTResourceConduit encounterSoTResourceConduit;
+
     @Inject
-    EncounterSoTResourceConduit encounterSoTResourceConduit;
+    EndpointSoTResourceConduit endpointSoTResourceConduit;
 
-//    @Inject
-//    EndpointSoTResourceConduit endpointSoTResourceConduit;
-
-//    @Inject
-//    GroupSoTResourceConduit groupSoTResourceConduit;
+    @Inject
+    GroupSoTResourceConduit groupSoTResourceConduit;
 
 //    @Inject
 //    HealthcareServiceSoTResourceConduit healthcareServiceSoTResourceConduit;
@@ -58,11 +58,11 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
 //    @Inject
 //    ProcedureSoTResourceConduit procedureSoTResourceConduit;
 
-//    @Inject
-//    TaskSoTResourceConduit taskSoTResourceConduit;
+    @Inject
+    TaskSoTResourceConduit taskSoTResourceConduit;
 
-//    @Inject
-//    ValueSetSoTResourceConduit valueSetSoTResourceConduit;
+    @Inject
+    ValueSetSoTResourceConduit valueSetSoTResourceConduit;
 
     protected void invokePostConstructInitialisation(){
         getLogger().debug(".initialise(): Entry");
@@ -74,30 +74,30 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
         communicationRequestSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising CommunicationSoTResourceConduit");
         communicationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising EncounterSoTResourceConduit");
-        encounterSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising EncounterSoTResourceConduit");
+//        encounterSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising EndpointSoTResourceConduit");
-//        endpointSoTResourceConduit.initialise();
-/*        getLogger().trace(".initialise(): initialising GroupSoTResourceConduit");
+        endpointSoTResourceConduit.initialise();
+        getLogger().trace(".initialise(): initialising GroupSoTResourceConduit");
         groupSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising HealthcareServiceSoTResourceConduit");
-        healthcareServiceSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising LocationSoTResourceConduit");
-        locationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising OrganizationSoTResourceConduit");
-        organizationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PatientSoTResourceConduit");
-        patientSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PractitionerRoleSoTResourceConduit");
-        practitionerRoleSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PractitionerSoTResourceConduit");
-        practitionerSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising ProcedureSoTResourceConduit");
-        procedureSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising HealthcareServiceSoTResourceConduit");
+//        healthcareServiceSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising LocationSoTResourceConduit");
+//        locationSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising OrganizationSoTResourceConduit");
+//        organizationSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PatientSoTResourceConduit");
+//        patientSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PractitionerRoleSoTResourceConduit");
+//        practitionerRoleSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PractitionerSoTResourceConduit");
+//        practitionerSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising ProcedureSoTResourceConduit");
+//        procedureSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising TaskSoTResourceConduit");
         taskSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising ValueSetSoTResourceConduit");
-        valueSetSoTResourceConduit.initialise(); */
+        valueSetSoTResourceConduit.initialise();
     }
 
     @Override
