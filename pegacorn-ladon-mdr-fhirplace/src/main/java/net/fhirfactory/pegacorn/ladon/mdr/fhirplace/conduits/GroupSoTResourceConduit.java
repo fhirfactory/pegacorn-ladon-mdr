@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import net.fhirfactory.pegacorn.ladon.mdr.conduit.GroupSoTConduitController;
+import net.fhirfactory.pegacorn.ladon.mdr.conduit.controller.GroupSoTConduitController;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.accessor.FHIRPlaceBaseIndividualsMDRAccessor;
 import net.fhirfactory.pegacorn.ladon.mdr.fhirplace.conduits.common.FHIRPlaceSoTConduitCommon;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.businesskey.VirtualDBKeyManagement;
@@ -30,6 +30,7 @@ import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceGradeEnum;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitActionResponse;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.ResourceSoTConduitSearchResponseElement;
 import net.fhirfactory.pegacorn.ladon.model.virtualdb.mdr.SoTConduitGradeEnum;
+import net.fhirfactory.pegacorn.ladon.model.virtualdb.searches.SearchNameEnum;
 import net.fhirfactory.pegacorn.platform.restfulapi.PegacornInternalFHIRClientServices;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class GroupSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     VirtualDBKeyManagement virtualDBKeyResolver;
 
     @Inject
-    private FHIRPlaceBaseIndividualsMDRAccessor fhirPlaceBaseIndividualsMDRAccessor;
+    private FHIRPlaceBaseIndividualsMDRAccessor servicesAccessor;
 
     @Override
     protected Logger getLogger(){
@@ -82,8 +83,8 @@ public class GroupSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     }
 
     @Override
-    protected PegacornInternalFHIRClientServices specifyJPAServerSecureAccessor() {
-        return (fhirPlaceBaseIndividualsMDRAccessor);
+    protected PegacornInternalFHIRClientServices specifySecureAccessor() {
+        return (servicesAccessor);
     }
 
     @Override
@@ -124,9 +125,9 @@ public class GroupSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
      * @return A Response/Outcome of the operation, including a copy of the Resource (if found).
      */
     @Override
-    public ResourceSoTConduitActionResponse reviewResource(Identifier identifier) {
+    public ResourceSoTConduitActionResponse getResourceViaIdentifier(Identifier identifier) {
         LOG.debug(".readResource(): Entry, identifier --> {}", identifier);
-        ResourceSoTConduitActionResponse outcome = standardReviewResource(Group.class, identifier);
+        ResourceSoTConduitActionResponse outcome = standardGetResourceViaIdentifier(ResourceType.Group.toString(), identifier);
         outcome.setResponseResourceGrade(ResourceGradeEnum.THOROUGH);
         outcome.setSoTGrade(SoTConduitGradeEnum.AUTHORITATIVE);
         LOG.debug(".readResource(): Exit, outcome --> {}", outcome);
@@ -181,17 +182,12 @@ public class GroupSoTResourceConduit extends FHIRPlaceSoTConduitCommon {
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Property attributeName, Element atributeValue) {
+    public List<ResourceSoTConduitSearchResponseElement> searchSourceOfTruthUsingCriteria(ResourceType resourceType, SearchNameEnum searchName, Map<Property, Serializable> parameterSet) {
         return null;
     }
 
     @Override
-    public List<ResourceSoTConduitSearchResponseElement> getResourcesViaSearchCriteria(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
-        return null;
-    }
-
-    @Override
-    public boolean supportiveOfSearchCritiera(ResourceType resourceType, Map<Property, Serializable> parameterSet) {
+    public boolean supportiveOfSearch(SearchNameEnum searchName) {
         return false;
     }
 

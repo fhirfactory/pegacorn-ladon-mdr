@@ -28,46 +28,43 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
     @Inject
     CommunicationSoTResourceConduit communicationSoTResourceConduit;
 
-    @Inject
-    EncounterSoTResourceConduit encounterSoTResourceConduit;
-
 //    @Inject
-//    EndpointSoTResourceConduit endpointSoTResourceConduit;
-/*
+//    EncounterSoTResourceConduit encounterSoTResourceConduit;
+
+    @Inject
+    EndpointSoTResourceConduit endpointSoTResourceConduit;
+
     @Inject
     GroupSoTResourceConduit groupSoTResourceConduit;
 
-    @Inject
-    HealthcareServiceSoTResourceConduit healthcareServiceSoTResourceConduit;
+//    @Inject
+//    HealthcareServiceSoTResourceConduit healthcareServiceSoTResourceConduit;
 
-    @Inject
-    LocationSoTResourceConduit locationSoTResourceConduit;
+//    @Inject
+//    LocationSoTResourceConduit locationSoTResourceConduit;
 
-    @Inject
-    OrganizationSoTResourceConduit organizationSoTResourceConduit;
+//    @Inject
+//    OrganizationSoTResourceConduit organizationSoTResourceConduit;
 
-    @Inject
-    PatientSoTResourceConduit patientSoTResourceConduit;
+//    @Inject
+//    PatientSoTResourceConduit patientSoTResourceConduit;
 
-    @Inject
-    PractitionerRoleSoTResourceConduit practitionerRoleSoTResourceConduit;
+//    @Inject
+//    PractitionerRoleSoTResourceConduit practitionerRoleSoTResourceConduit;
 
-    @Inject
-    PractitionerSoTResourceConduit practitionerSoTResourceConduit;
+//    @Inject
+//    PractitionerSoTResourceConduit practitionerSoTResourceConduit;
 
-    @Inject
-    ProcedureSoTResourceConduit procedureSoTResourceConduit;
+//    @Inject
+//    ProcedureSoTResourceConduit procedureSoTResourceConduit;
 
     @Inject
     TaskSoTResourceConduit taskSoTResourceConduit;
 
     @Inject
     ValueSetSoTResourceConduit valueSetSoTResourceConduit;
-    */
 
-
-    @PostConstruct
-    public void initialise(){
+    protected void invokePostConstructInitialisation(){
         getLogger().debug(".initialise(): Entry");
         getLogger().trace(".initialise(): initialising DocumentReferenceSoTResourceConduit");
         documentReferenceSoTResourceConduit.initialise();
@@ -77,30 +74,30 @@ public class FHIRPlaceMDRWorkshop  extends StandardWorkshop {
         communicationRequestSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising CommunicationSoTResourceConduit");
         communicationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising EncounterSoTResourceConduit");
-        encounterSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising EncounterSoTResourceConduit");
+//        encounterSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising EndpointSoTResourceConduit");
-//        endpointSoTResourceConduit.initialise();
-/*        getLogger().trace(".initialise(): initialising GroupSoTResourceConduit");
+        endpointSoTResourceConduit.initialise();
+        getLogger().trace(".initialise(): initialising GroupSoTResourceConduit");
         groupSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising HealthcareServiceSoTResourceConduit");
-        healthcareServiceSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising LocationSoTResourceConduit");
-        locationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising OrganizationSoTResourceConduit");
-        organizationSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PatientSoTResourceConduit");
-        patientSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PractitionerRoleSoTResourceConduit");
-        practitionerRoleSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising PractitionerSoTResourceConduit");
-        practitionerSoTResourceConduit.initialise();
-        getLogger().trace(".initialise(): initialising ProcedureSoTResourceConduit");
-        procedureSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising HealthcareServiceSoTResourceConduit");
+//        healthcareServiceSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising LocationSoTResourceConduit");
+//        locationSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising OrganizationSoTResourceConduit");
+//        organizationSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PatientSoTResourceConduit");
+//        patientSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PractitionerRoleSoTResourceConduit");
+//        practitionerRoleSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising PractitionerSoTResourceConduit");
+//        practitionerSoTResourceConduit.initialise();
+//        getLogger().trace(".initialise(): initialising ProcedureSoTResourceConduit");
+//        procedureSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising TaskSoTResourceConduit");
         taskSoTResourceConduit.initialise();
         getLogger().trace(".initialise(): initialising ValueSetSoTResourceConduit");
-        valueSetSoTResourceConduit.initialise(); */
+        valueSetSoTResourceConduit.initialise();
     }
 
     @Override
