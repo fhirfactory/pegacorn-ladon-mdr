@@ -40,7 +40,7 @@ public class FHIRPlaceClinicalRequestAndResponseMDRAccessor extends PegacornInte
     private PegacornFHIRPlaceMDRComponentNames pegacornMDRComponentNames;
 
     @Override
-    protected String specifyFHIRServerSubsystemService() {
+    protected String specifyFHIRServerService() {
         return (pegacornMDRComponentNames.getClinicalRequestAndResponsePegacornMDRService());
     }
 

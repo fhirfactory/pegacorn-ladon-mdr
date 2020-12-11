@@ -40,7 +40,7 @@ public class FHIRPlaceBaseManagementMDRAccessor extends PegacornInternalFHIRClie
     private PegacornFHIRPlaceMDRComponentNames pegacornMDRComponentNames;
 
     @Override
-    protected String specifyFHIRServerSubsystemService() {
+    protected String specifyFHIRServerService() {
         return (pegacornMDRComponentNames.getBaseManagementPegacornMDRService());
     }
 
